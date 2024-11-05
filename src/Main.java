@@ -9,10 +9,83 @@ public class Main {
         Pasajero pasajero1 = new Pasajero("Juan", "12345678", "Ciudad A", "Calle Falsa 123", TipoHabitacion.SIMPLE);
         Pasajero pasajero2 = new Pasajero("Maria", "87654321", "Ciudad B", "Avenida Siempre Viva 742", TipoHabitacion.DOBLE);
         boolean salir = false;
-
         while (!salir) {
+            System.out.println("Seleccione su rol:");
+            System.out.println("1. Administrador");
+            System.out.println("2. Recepcionista");
+            System.out.println("3. Salir");
+            System.out.print("Seleccione una opción: ");
+            int rol = scanner.nextInt();
+            scanner.nextLine();
 
-            System.out.println("Menú de Gestión de Hotel");
+            switch (rol) {
+                case 1:
+                    menuAdministrador(scanner, hotel);
+                    break;
+                case 2:
+                    menuRecepcionista(scanner, hotel);
+                    break;
+                case 3:
+                    System.out.println("Saliendo del sistema...");
+                    salir = true;
+                    break;
+                default:
+                    System.out.println("Opción no válida, intente nuevamente.");
+            }
+        }
+        scanner.close();
+    }
+
+    private static void menuAdministrador(Scanner scanner, Hotel hotel) {
+        boolean salir = false;
+        while (!salir) {
+            System.out.println("\nMenú de Gestión de Hotel como Administrador");
+            System.out.println("1. Agregar habitación");
+            System.out.println("2. Eliminar habitación");
+            System.out.println("3. Listar habitaciones");
+            System.out.println("4. Salir al menú principal");
+            System.out.print("Seleccione una opción: ");
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (opcion) {
+                case 1:
+                    System.out.print("Ingrese el número de la nueva habitación: ");
+                    int numero = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.print("Ingrese el tipo de habitación (SIMPLE, DOBLE, SUITE): ");
+                    String tipo = scanner.nextLine().toUpperCase();
+                    TipoHabitacion tipoHabitacion = TipoHabitacion.valueOf(tipo);
+                    Habitacion habitacion = new Habitacion(numero, tipoHabitacion);
+                    hotel.agregarHabitacion(habitacion);
+                    System.out.println("Habitación agregada exitosamente.");
+                    break;
+                case 2:
+                    System.out.print("Ingrese el número de la habitación a eliminar: ");
+                    int numeroEliminar = scanner.nextInt();
+                    scanner.nextLine();
+                    hotel.eliminarHabitacion(numeroEliminar);
+                    System.out.println("Habitación eliminada exitosamente.");
+                    break;
+                case 3:
+                    System.out.println("Lista de habitaciones:");
+                    for (Habitacion hab : hotel.listarHabitaciones()) {
+                        System.out.println("Habitación " + hab.getNumero() + " - Tipo: " + hab.getTipo() + " - Estado: " + hab.getEstado());
+                    }
+                    break;
+                case 4:
+                    salir = true;
+                    break;
+                default:
+                    System.out.println("Opción no válida, intente nuevamente.");
+            }
+        }
+    }
+
+    private static void menuRecepcionista(Scanner scanner, Hotel hotel) {
+        boolean salir = false;
+        while (!salir) {
+            System.out.println("Menú de Gestión de Hotel como Recepcionista");
 
             System.out.println("1. Realizar Check-In");
             System.out.println("2. Realizar Check-Out");
@@ -28,46 +101,14 @@ public class Main {
             switch (opcion) {
 
 
+
                 case 1:
                     System.out.print("Ingrese el DNI del pasajero: ");
                     String dniCheckIn = scanner.nextLine();
-                    Pasajero pasajeroCheckIn = hotel.buscarPasajeroPorDni(dniCheckIn);
-
-                    if (pasajeroCheckIn != null) {
-                        
-                        Reserva reserva = hotel.buscarReservaPorDni(dniCheckIn);
-
-                        if (reserva != null) {
-
-                            System.out.println("El pasajero tiene una reserva en una habitación tipo: " + reserva.getTipoHabitacion());
-
-
-                            Habitacion habitacionDisponible = hotel.buscarHabitacionDisponiblePorTipo(reserva.getTipoHabitacion());
-
-                            if (habitacionDisponible != null) {
-                                habitacionDisponible.realizarCheckIn(pasajeroCheckIn);
-                                System.out.println("Check-In realizado correctamente en la habitación " + habitacionDisponible.getNumero());
-                            } else {
-                                System.out.println("No hay habitaciones disponibles del tipo reservado.");
-                            }
-                        } else {
-
-                            System.out.print("Ingrese el número de habitación: ");
-                            int numeroHabitacionCheckIn = scanner.nextInt();
-                            scanner.nextLine();
-                            Habitacion habitacionCheckIn = hotel.buscarHabitacionPorNumero(numeroHabitacionCheckIn);
-
-                            if (habitacionCheckIn != null) {
-                                habitacionCheckIn.realizarCheckIn(pasajeroCheckIn);
-                                System.out.println("Check-In realizado correctamente!");
-                            } else {
-                                System.out.println("Habitación no encontrada.");
-                            }
-                        }
-                    } else {
-                        System.out.println("Pasajero no encontrado.");
-                    }
+                    Recepcionista.realizarCheckIn(dniCheckIn);
                     break;
+
+
 
 
                 case 2:
@@ -141,7 +182,7 @@ public class Main {
 
 
                 case 5:
-                    // Agregar nuevo pasajero
+
                     System.out.print("Ingrese el nombre del pasajero: ");
                     String nombrePasajero = scanner.nextLine();
                     System.out.print("Ingrese el DNI del pasajero: ");
@@ -151,13 +192,12 @@ public class Main {
                     System.out.print("Ingrese el domicilio del pasajero: ");
                     String domicilioPasajero = scanner.nextLine();
 
-                    // Seleccionar el tipo de habitación
                     System.out.println("Seleccione el tipo de habitación para el pasajero:");
                     System.out.println("1. SIMPLE");
                     System.out.println("2. DOBLE");
                     System.out.println("3. SUITE");
                     int tipoHabitacionOpcion = scanner.nextInt();
-                    scanner.nextLine();  // Consumir la nueva línea
+                    scanner.nextLine();
 
                     TipoHabitacion tipoHabitacion;
                     switch (tipoHabitacionOpcion) {
@@ -175,7 +215,6 @@ public class Main {
                             tipoHabitacion = TipoHabitacion.SIMPLE;
                     }
 
-// Crear el pasajero con el tipo de habitación
                     Pasajero nuevoPasajero = new Pasajero(nombrePasajero, dniPasajero, origenPasajero, domicilioPasajero, tipoHabitacion);
                     hotel.agregarPasajero(nuevoPasajero);
                     System.out.println("Pasajero agregado exitosamente.");
@@ -184,27 +223,57 @@ public class Main {
                     int cantidadPasajeros = scanner.nextInt();
                     scanner.nextLine();
 
-                    // Opción para agregar servicios adicionales
+
                     List<String> serviciosAdicionales = new ArrayList<>();
-                    System.out.println("¿Desea agregar servicios adicionales? (Spa, Restaurante, etc.) (S/N): ");
+                    System.out.println("¿Desea agregar servicios adicionales? (S/N): ");
                     String opcionServicios = scanner.nextLine().toUpperCase();
 
                     if (opcionServicios.equals("S")) {
-                        System.out.print("Ingrese los servicios adicionales separados por comas: ");
-                        String servicios = scanner.nextLine();
-                        String[] serviciosArray = servicios.split(",");
-                        for (String servicio : serviciosArray) {
-                            serviciosAdicionales.add(servicio.trim());
+                        boolean agregarMasServicios = true;
+                        while (agregarMasServicios) {
+                            System.out.println("Seleccione el servicio adicional que desea reservar:");
+                            System.out.println("1. Spa");
+                            System.out.println("2. Restaurante");
+                            int opcionServicio = scanner.nextInt();
+                            scanner.nextLine();
+
+                            String nombreServicio = opcionServicio == 1 ? "Spa" : "Restaurante";
+
+                            System.out.println("Seleccione el horario para " + nombreServicio + ": ");
+                            ServicioAdicional servicio = hotel.buscarServicio(nombreServicio);
+                            if (servicio != null) {
+                                List<String> horarios = servicio.getHorariosDisponibles();
+                                for (int i = 0; i < horarios.size(); i++) {
+                                    System.out.println((i + 1) + ". " + horarios.get(i));
+                                }
+                                int horarioSeleccionado = scanner.nextInt() - 1;
+                                scanner.nextLine();
+
+                                if (horarioSeleccionado >= 0 && horarioSeleccionado < horarios.size()) {
+                                    String horario = horarios.get(horarioSeleccionado);
+                                    serviciosAdicionales.add(nombreServicio + " a las " + horario);
+                                    servicio.reservarTurno(horario);
+                                    System.out.println("Reserva realizada para " + nombreServicio + " en el horario " + horario);
+                                } else {
+                                    System.out.println("Horario no válido.");
+                                }
+                            } else {
+                                System.out.println("Servicio no disponible.");
+                            }
+
+                            System.out.println("¿Desea agregar otro servicio adicional? (S/N): ");
+                            String respuesta = scanner.nextLine().toUpperCase();
+                            agregarMasServicios = respuesta.equals("S");
                         }
                     }
 
-                    // Realizar la reserva
                     boolean reservaExitosa = hotel.reservarHabitacion(nuevoPasajero, tipoHabitacion, cantidadPasajeros, serviciosAdicionales);
                     if (reservaExitosa) {
-                        System.out.println("Reserva realizada exitosamente.");
+                        System.out.println("Reserva de habitación realizada exitosamente.");
                     } else {
-                        System.out.println("No se pudo realizar la reserva. No hay habitaciones disponibles del tipo seleccionado.");
+                        System.out.println("No se pudo realizar la reserva de la habitación. No hay habitaciones disponibles del tipo seleccionado.");
                     }
+
                     break;
 
                     case 6:

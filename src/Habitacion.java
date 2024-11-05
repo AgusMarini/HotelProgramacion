@@ -30,17 +30,18 @@ public class Habitacion implements Reservable, Checkable, Ocupable {
     }
 
     @Override
-    public boolean reservar(String fechaInicio, String fechaFin, String tipo) {
+    public boolean reservar(String fechaInicio, String fechaFin, String tipo) throws HabitacionNoDisponibleException {
         if (estado == EstadoHabitacion.DISPONIBLE) {
             reservas.add(fechaInicio + " a " + fechaFin);
             estado = EstadoHabitacion.RESERVADA;
-            ultimaModificacionEstado = LocalDateTime.now(); // Actualiza el tiempo de modificación
+            ultimaModificacionEstado = LocalDateTime.now();
             return true;
+        } else {
+            throw new HabitacionNoDisponibleException("La habitación " + numero + " no está disponible para reservar.");
         }
-        return false;
     }
 
-    // Métodos de Checkable
+
     @Override
     public boolean realizarCheckIn(Pasajero pasajero) {
         if (this.estado == EstadoHabitacion.RESERVADA || this.estado == EstadoHabitacion.DISPONIBLE) {
@@ -65,33 +66,13 @@ public class Habitacion implements Reservable, Checkable, Ocupable {
         return false;
     }
 
-    // Métodos de Reservable
-    @Override
-    public boolean cancelarReserva() {
-        if (estado == EstadoHabitacion.RESERVADA) {
-            reservas.clear();
-            estado = EstadoHabitacion.DISPONIBLE;
-            ultimaModificacionEstado = LocalDateTime.now();
-            return true;
-        }
-        return false;
-    }
 
-    @Override
-    public boolean estaDisponible(String fechaInicio, String fechaFin, String tipo, TipoHabitacion tipoHabitacion) {
-        if (this.estado == EstadoHabitacion.DISPONIBLE && this.tipo == tipoHabitacion) {
-            return true;
-        }
-        return false;
-    }
 
-    // Método de Ocupable
     @Override
     public boolean puedeOcupar() {
         return this.estado == EstadoHabitacion.DISPONIBLE;
     }
 
-    // Getters y Setters
     @Override
     public EstadoHabitacion getEstado() {
         return estado;
@@ -119,17 +100,22 @@ public class Habitacion implements Reservable, Checkable, Ocupable {
     }
 
     @Override
-    public boolean reservar(Pasajero pasajero, String fechaInicio, String fechaFin, TipoHabitacion tipoHabitacion, int cantidadPasajeros, List<String> serviciosAdicionales) {
+    public boolean cancelarReserva() {
+        if (estado == EstadoHabitacion.RESERVADA) {
+            reservas.clear();
+            estado = EstadoHabitacion.DISPONIBLE;
+            ultimaModificacionEstado = LocalDateTime.now();
+            return true;
+        }
         return false;
     }
 
     @Override
-    public boolean cancelarReserva(Pasajero pasajero) {
+    public boolean estaDisponible(String fechaInicio, String fechaFin, String tipo, TipoHabitacion tipoHabitacion) {
+        if (this.estado == EstadoHabitacion.DISPONIBLE && this.tipo == tipoHabitacion) {
+            return true;
+        }
         return false;
     }
 
-    @Override
-    public boolean estaDisponible(String fechaInicio, String fechaFin, TipoHabitacion tipoHabitacion) {
-        return false;
-    }
 }
