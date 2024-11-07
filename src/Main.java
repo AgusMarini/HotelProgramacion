@@ -6,6 +6,9 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Hotel hotel = new Hotel("Hotel");
+        Administrador admin = new Administrador("NombreAdmin", "12345678");
+
+
         Pasajero pasajero1 = new Pasajero("Juan", "12345678", "Ciudad A", "Calle Falsa 123", TipoHabitacion.SIMPLE);
         Pasajero pasajero2 = new Pasajero("Maria", "87654321", "Ciudad B", "Avenida Siempre Viva 742", TipoHabitacion.DOBLE);
         boolean salir = false;
@@ -20,7 +23,7 @@ public class Main {
 
             switch (rol) {
                 case 1:
-                    menuAdministrador(scanner, hotel);
+                    menuAdministrador(scanner, hotel, admin);
                     break;
                 case 2:
                     menuRecepcionista(scanner, hotel);
@@ -36,14 +39,15 @@ public class Main {
         scanner.close();
     }
 
-    private static void menuAdministrador(Scanner scanner, Hotel hotel) {
+    private static void menuAdministrador(Scanner scanner, Hotel hotel, Administrador admin) {
         boolean salir = false;
         while (!salir) {
             System.out.println("\nMenú de Gestión de Hotel como Administrador");
             System.out.println("1. Agregar habitación");
             System.out.println("2. Eliminar habitación");
             System.out.println("3. Listar habitaciones");
-            System.out.println("4. Salir al menú principal");
+            System.out.println("4. Modificar estado de habitación");
+            System.out.println("5. Salir al menú principal");
             System.out.print("Seleccione una opción: ");
             int opcion = scanner.nextInt();
             scanner.nextLine();
@@ -57,9 +61,9 @@ public class Main {
                     String tipo = scanner.nextLine().toUpperCase();
                     TipoHabitacion tipoHabitacion = TipoHabitacion.valueOf(tipo);
                     Habitacion habitacion = new Habitacion(numero, tipoHabitacion);
-                    hotel.agregarHabitacion(habitacion);
-                    System.out.println("Habitación agregada exitosamente.");
+                    admin.agregarHabitacion(hotel, habitacion);
                     break;
+
                 case 2:
                     System.out.print("Ingrese el número de la habitación a eliminar: ");
                     int numeroEliminar = scanner.nextInt();
@@ -74,13 +78,47 @@ public class Main {
                     }
                     break;
                 case 4:
+                    System.out.print("Ingrese el número de la habitación a modificar: ");
+                    int numeroHabitacion = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.println("Seleccione el nuevo estado:");
+                    System.out.println("1. LIMPIEZA");
+                    System.out.println("2. REPARACION");
+                    System.out.println("3. DESINFECCION");
+                    System.out.println("4. DISPONIBLE");
+                    int estadoOpcion = scanner.nextInt();
+                    scanner.nextLine();
+
+                    EstadoHabitacion nuevoEstado;
+                    switch (estadoOpcion) {
+                        case 1:
+                            nuevoEstado = EstadoHabitacion.LIMPIEZA;
+                            break;
+                        case 2:
+                            nuevoEstado = EstadoHabitacion.REPARACION;
+                            break;
+                        case 3:
+                            nuevoEstado = EstadoHabitacion.DESINFECCION;
+                            break;
+                        case 4:
+                            nuevoEstado = EstadoHabitacion.DISPONIBLE;
+                            break;
+                        default:
+                            System.out.println("Opción no válida. Se mantendrá el estado actual.");
+                            return;
+                    }
+
+                    admin.modificarHabitacion(numeroHabitacion, nuevoEstado);
+                    break;
+                case 5:
                     salir = true;
                     break;
                 default:
                     System.out.println("Opción no válida, intente nuevamente.");
             }
+            }
         }
-    }
+
 
     private static void menuRecepcionista(Scanner scanner, Hotel hotel) {
         boolean salir = false;
@@ -108,59 +146,11 @@ public class Main {
                     Recepcionista.realizarCheckIn(dniCheckIn);
                     break;
 
-
-
-
                 case 2:
-
                     System.out.print("Ingrese el número de habitación para Check-Out: ");
                     int numeroHabitacionCheckOut = scanner.nextInt();
                     scanner.nextLine();
-                    Habitacion habitacionCheckOut = hotel.buscarHabitacionPorNumero(numeroHabitacionCheckOut);
-
-                    if (habitacionCheckOut != null) {
-
-                        habitacionCheckOut.puedeOcupar();
-                        System.out.println("Check-Out realizado correctamente!");
-
-
-                        System.out.println("Seleccione el estado de la habitación después del Check-Out:");
-                        System.out.println("1. LIMPIEZA");
-                        System.out.println("2. REPARACION");
-                        System.out.println("3. DESINFECCION");
-                        System.out.println("4. DISPONIBLE");
-
-                        int opcionEstado = scanner.nextInt();
-                        scanner.nextLine();
-
-
-                        switch (opcionEstado) {
-                            case 1:
-                                habitacionCheckOut.setEstado(EstadoHabitacion.LIMPIEZA);
-                                System.out.println("La habitación se ha marcado como en LIMPIEZA.");
-                                break;
-                            case 2:
-                                habitacionCheckOut.setEstado(EstadoHabitacion.REPARACION);
-                                System.out.println("La habitación se ha marcado como en REPARACION.");
-                                break;
-                            case 3:
-                                habitacionCheckOut.setEstado(EstadoHabitacion.DESINFECCION);
-                                System.out.println("La habitación se ha marcado como en DESINFECCION.");
-                                break;
-                            case 4:
-                                habitacionCheckOut.setEstado(EstadoHabitacion.DISPONIBLE);
-                                System.out.println("La habitación se ha marcado como DISPONIBLE.");
-                                break;
-                            default:
-                                System.out.println("Opción no válida. La habitación se marcará como DISPONIBLE por defecto.");
-                                habitacionCheckOut.setEstado(EstadoHabitacion.DISPONIBLE);
-                        }
-
-
-
-                    } else {
-                        System.out.println("Habitación no encontrada.");
-                    }
+                    Recepcionista.realizarCheckOut(numeroHabitacionCheckOut);
                     break;
 
                 case 3:

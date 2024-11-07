@@ -49,7 +49,15 @@ public class Hotel {
 
         verificadorHabitaciones.start();
     }
-    public void agregarHabitacion(Habitacion habitacion) {
+    public  void agregarHabitacion(Habitacion habitacion) {
+
+        for (Habitacion h : habitaciones) {
+            if (h.getNumero() == habitacion.getNumero()) {
+                System.out.println("Error: Ya existe una habitación con el número " + habitacion.getNumero());
+                return;
+            }
+        }
+
         habitaciones.add(habitacion);
         System.out.println("Habitación " + habitacion.getNumero() + " agregada al inventario.");
     }

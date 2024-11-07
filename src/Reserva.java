@@ -13,7 +13,7 @@ public class Reserva {
         this.tipoHabitacion = tipoHabitacion;
         this.cantidadPasajeros = cantidadPasajeros;
         this.serviciosAdicionales = serviciosAdicionales;
-        this.numeroHabitacion = numeroHabitacion; // Almacenar el número de la habitación
+        this.numeroHabitacion = numeroHabitacion;
     }
 
     public Pasajero getPasajero() {

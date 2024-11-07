@@ -18,10 +18,10 @@ public class Administrador extends Usuario {
     public void mostrarInfo() {
         System.out.println("Administrador: " + getNombre());
     }
-    public void agregarHabitacion(Habitacion habitacion) {
-        habitaciones.add(habitacion);
-        System.out.println("Habitación añadida: " + habitacion.getNumero());
+    public void agregarHabitacion(Hotel hotel, Habitacion habitacion) {
+        hotel.agregarHabitacion(habitacion);
     }
+
     public void modificarHabitacion(int numeroHabitacion, EstadoHabitacion nuevoEstado) {
         for (Habitacion habitacion : habitaciones) {
             if (habitacion.getNumero() == numeroHabitacion) {
