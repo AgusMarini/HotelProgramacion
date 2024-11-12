@@ -16,6 +16,10 @@ public class Recepcionista extends Usuario {
 
     public void controlarDisponibilidad() {
         System.out.println("Habitaciones disponibles:");
+        if (habitaciones.isEmpty()) {
+            System.out.println("No hay habitaciones disponibles.");
+            return;
+        }
         for (Habitacion habitacion : habitaciones) {
             if (habitacion.getEstado() == EstadoHabitacion.DISPONIBLE) {
                 System.out.println("Habitación " + habitacion.getNumero());
@@ -24,7 +28,7 @@ public class Recepcionista extends Usuario {
     }
 
 
-    public static void realizarCheckIn(String dniPasajero) {
+    public void realizarCheckIn(String dniPasajero) {
         Pasajero pasajero = Hotel.buscarPasajeroPorDni(dniPasajero);
         if (pasajero != null) {
             Reserva reserva = Hotel.buscarReservaPorDni(dniPasajero);
@@ -44,8 +48,8 @@ public class Recepcionista extends Usuario {
         }
     }
 
-    // Método estático para realizar Check-Out
-    public static void realizarCheckOut(int numeroHabitacion) {
+
+    public void realizarCheckOut(int numeroHabitacion) {
         Scanner scanner = new Scanner(System.in);
         Habitacion habitacion = Hotel.buscarHabitacionPorNumero(numeroHabitacion);
 
@@ -80,8 +84,6 @@ public class Recepcionista extends Usuario {
             System.out.println("Habitación no encontrada.");
         }
     }
-
-
 
     @Override
     public void mostrarInfo() {

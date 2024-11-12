@@ -8,7 +8,7 @@ public class Main {
         Hotel hotel = new Hotel("Hotel");
         Administrador admin = new Administrador("NombreAdmin", "12345678");
 
-        // Crear el recepcionista y asignar habitaciones
+
         Recepcionista recepcionista = new Recepcionista("Juan", "12345678");
         recepcionista.setHabitaciones(new ArrayList<>(hotel.listarHabitaciones()));
 
@@ -78,8 +78,7 @@ public class Main {
                     System.out.print("Ingrese el número de la habitación a eliminar: ");
                     int numeroEliminar = scanner.nextInt();
                     scanner.nextLine();
-                    hotel.eliminarHabitacion(numeroEliminar);
-                    System.out.println("Habitación eliminada exitosamente.");
+                    admin.eliminarHabitacion(numeroEliminar); // Usar método del administrador
                     break;
                 case 3:
                     System.out.println("Lista de habitaciones:");
@@ -102,7 +101,6 @@ public class Main {
                         case 1:
                             nuevoEstado = EstadoHabitacion.LIMPIEZA;
                             break;
-
                         case 2:
                             nuevoEstado = EstadoHabitacion.DISPONIBLE;
                             break;
@@ -141,13 +139,13 @@ public class Main {
                 case 1:
                     System.out.print("Ingrese el DNI del pasajero: ");
                     String dniCheckIn = scanner.nextLine();
-                    Recepcionista.realizarCheckIn(dniCheckIn);
+                    recepcionista.realizarCheckIn(dniCheckIn); // Usar método del recepcionista
                     break;
                 case 2:
                     System.out.print("Ingrese el número de habitación para Check-Out: ");
                     int numeroHabitacionCheckOut = scanner.nextInt();
                     scanner.nextLine();
-                    Recepcionista.realizarCheckOut(numeroHabitacionCheckOut);
+                    recepcionista.realizarCheckOut(numeroHabitacionCheckOut); // Usar método del recepcionista
                     break;
                 case 3:
                     System.out.println("Habitaciones No Disponibles:");
@@ -248,7 +246,6 @@ public class Main {
                     } else {
                         System.out.println("No se pudo realizar la reserva de la habitación. No hay habitaciones disponibles del tipo seleccionado.");
                     }
-
                     break;
                 case 6:
                     recepcionista.controlarDisponibilidad();

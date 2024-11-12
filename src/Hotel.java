@@ -70,7 +70,7 @@ public class Hotel {
         for (Habitacion habitacion : habitaciones) {
             if (habitacion.puedeCambiarADisponible()) {
                 habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-                System.out.println("La habitación " + habitacion.getNumero() + " ahora está DISPONIBLE.");
+
             }
         }
     }
