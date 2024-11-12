@@ -109,7 +109,7 @@ public class Hotel {
     public static List<Habitacion> listarHabitacionesNoDisponibles() {
         List<Habitacion> noDisponibles = new ArrayList<>();
         for (Habitacion h : habitaciones) {
-            if (h.getEstado() == EstadoHabitacion.LIMPIEZA || h.getEstado() == EstadoHabitacion.REPARACION || h.getEstado() == EstadoHabitacion.DESINFECCION || h.getEstado() == EstadoHabitacion.OCUPADA) {
+            if (h.getEstado() == EstadoHabitacion.LIMPIEZA  || h.getEstado() == EstadoHabitacion.OCUPADA) {
                 noDisponibles.add(h);
             }
         }

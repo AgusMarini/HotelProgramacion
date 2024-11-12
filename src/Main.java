@@ -16,7 +16,8 @@ public class Main {
             System.out.println("Seleccione su rol:");
             System.out.println("1. Administrador");
             System.out.println("2. Recepcionista");
-            System.out.println("3. Salir");
+            System.out.println("3. Cancelar Reserva");
+            System.out.println("4. Salir");
             System.out.print("Seleccione una opción: ");
             int rol = scanner.nextInt();
             scanner.nextLine();
@@ -29,6 +30,14 @@ public class Main {
                     menuRecepcionista(scanner, hotel);
                     break;
                 case 3:
+                    System.out.print("Ingrese el DNI del pasajero para cancelar la reserva: ");
+                    String dniPasajero = scanner.next();
+                    boolean cancelada = hotel.cancelarReserva(dniPasajero);
+                    if (!cancelada) {
+                        System.out.println("No se pudo cancelar la reserva. Verifique el DNI proporcionado.");
+                    }
+                    break;
+                case 4:
                     System.out.println("Saliendo del sistema...");
                     salir = true;
                     break;
@@ -83,9 +92,7 @@ public class Main {
                     scanner.nextLine();
                     System.out.println("Seleccione el nuevo estado:");
                     System.out.println("1. LIMPIEZA");
-                    System.out.println("2. REPARACION");
-                    System.out.println("3. DESINFECCION");
-                    System.out.println("4. DISPONIBLE");
+                    System.out.println("2. DISPONIBLE");
                     int estadoOpcion = scanner.nextInt();
                     scanner.nextLine();
 

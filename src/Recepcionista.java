@@ -50,9 +50,7 @@ public class Recepcionista extends Usuario{
                 System.out.println("Check-Out realizado correctamente!");
                 System.out.println("Seleccione el estado de la habitación después del Check-Out:");
                 System.out.println("1. LIMPIEZA");
-                System.out.println("2. REPARACION");
-                System.out.println("3. DESINFECCION");
-                System.out.println("4. DISPONIBLE");
+                System.out.println("2. DISPONIBLE");
 
                 int opcionEstado = scanner.nextInt();
                 scanner.nextLine();
@@ -62,15 +60,8 @@ public class Recepcionista extends Usuario{
                         habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
                         System.out.println("La habitación se ha marcado como en LIMPIEZA.");
                         break;
+
                     case 2:
-                        habitacion.setEstado(EstadoHabitacion.REPARACION);
-                        System.out.println("La habitación se ha marcado como en REPARACION.");
-                        break;
-                    case 3:
-                        habitacion.setEstado(EstadoHabitacion.DESINFECCION);
-                        System.out.println("La habitación se ha marcado como en DESINFECCION.");
-                        break;
-                    case 4:
                         habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
                         System.out.println("La habitación se ha marcado como DISPONIBLE.");
                         break;
