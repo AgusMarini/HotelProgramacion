@@ -1,26 +1,29 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Recepcionista extends Usuario{
+public class Recepcionista extends Usuario {
     private ArrayList<Habitacion> habitaciones;
 
     public Recepcionista(String nombre, String dni) {
         super(nombre, dni);
-        this.habitaciones=new ArrayList<>();
+        this.habitaciones = new ArrayList<>();
     }
 
     public void setHabitaciones(ArrayList<Habitacion> habitaciones) {
         this.habitaciones = habitaciones;
     }
 
+
     public void controlarDisponibilidad() {
         System.out.println("Habitaciones disponibles:");
         for (Habitacion habitacion : habitaciones) {
-            if (habitacion.puedeOcupar()) {
+            if (habitacion.getEstado() == EstadoHabitacion.DISPONIBLE) {
                 System.out.println("Habitación " + habitacion.getNumero());
             }
         }
     }
+
+
     public static void realizarCheckIn(String dniPasajero) {
         Pasajero pasajero = Hotel.buscarPasajeroPorDni(dniPasajero);
         if (pasajero != null) {
@@ -41,6 +44,7 @@ public class Recepcionista extends Usuario{
         }
     }
 
+    // Método estático para realizar Check-Out
     public static void realizarCheckOut(int numeroHabitacion) {
         Scanner scanner = new Scanner(System.in);
         Habitacion habitacion = Hotel.buscarHabitacionPorNumero(numeroHabitacion);
@@ -60,7 +64,6 @@ public class Recepcionista extends Usuario{
                         habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
                         System.out.println("La habitación se ha marcado como en LIMPIEZA.");
                         break;
-
                     case 2:
                         habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
                         System.out.println("La habitación se ha marcado como DISPONIBLE.");
@@ -68,6 +71,7 @@ public class Recepcionista extends Usuario{
                     default:
                         System.out.println("Opción no válida. La habitación se marcará como DISPONIBLE por defecto.");
                         habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
+                        break;
                 }
             } else {
                 System.out.println("La habitación no está ocupada o no se pudo realizar el Check-Out.");
@@ -78,14 +82,7 @@ public class Recepcionista extends Usuario{
     }
 
 
-    public void listarHabitacionesOcupadas() {
-        System.out.println("Habitaciones Ocupadas:");
-        for (Habitacion habitacion : Hotel.listarHabitacionesNoDisponibles()) {
-            if (habitacion.getEstado() == EstadoHabitacion.OCUPADA) {
-                System.out.println("Habitación " + habitacion.getNumero() + " - Tipo: " + habitacion.getTipo());
-            }
-        }
-    }
+
     @Override
     public void mostrarInfo() {
         System.out.println("Recepcionista: " + getNombre());

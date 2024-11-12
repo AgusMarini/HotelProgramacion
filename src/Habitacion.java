@@ -2,7 +2,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Habitacion implements Checkable, Ocupable {
+public class Habitacion {
     private int numero;
     private EstadoHabitacion estado;
     private TipoHabitacion tipo;
@@ -29,7 +29,6 @@ public class Habitacion implements Checkable, Ocupable {
         return false;
     }
 
-    @Override
     public boolean realizarCheckIn(Pasajero pasajero) {
         if (this.estado == EstadoHabitacion.RESERVADA || this.estado == EstadoHabitacion.DISPONIBLE) {
             this.ocupante = pasajero;
@@ -40,7 +39,6 @@ public class Habitacion implements Checkable, Ocupable {
         return false;
     }
 
-    @Override
     public boolean realizarCheckOut() {
         if (this.estado == EstadoHabitacion.OCUPADA) {
             this.ocupante = null;
@@ -51,12 +49,6 @@ public class Habitacion implements Checkable, Ocupable {
         return false;
     }
 
-    @Override
-    public boolean puedeOcupar() {
-        return this.estado == EstadoHabitacion.DISPONIBLE;
-    }
-
-    @Override
     public EstadoHabitacion getEstado() {
         return estado;
     }
