@@ -2,7 +2,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Habitacion implements Reservable, Checkable, Ocupable {
+public class Habitacion implements Checkable, Ocupable {
     private int numero;
     private EstadoHabitacion estado;
     private TipoHabitacion tipo;
@@ -30,19 +30,6 @@ public class Habitacion implements Reservable, Checkable, Ocupable {
     }
 
     @Override
-    public boolean reservar(String fechaInicio, String fechaFin, String tipo) throws HabitacionNoDisponibleException {
-        if (estado == EstadoHabitacion.DISPONIBLE) {
-            reservas.add(fechaInicio + " a " + fechaFin);
-            estado = EstadoHabitacion.RESERVADA;
-            ultimaModificacionEstado = LocalDateTime.now();
-            return true;
-        } else {
-            throw new HabitacionNoDisponibleException("La habitación " + numero + " no está disponible para reservar.");
-        }
-    }
-
-
-    @Override
     public boolean realizarCheckIn(Pasajero pasajero) {
         if (this.estado == EstadoHabitacion.RESERVADA || this.estado == EstadoHabitacion.DISPONIBLE) {
             this.ocupante = pasajero;
@@ -53,20 +40,16 @@ public class Habitacion implements Reservable, Checkable, Ocupable {
         return false;
     }
 
-
-
     @Override
     public boolean realizarCheckOut() {
         if (this.estado == EstadoHabitacion.OCUPADA) {
             this.ocupante = null;
-            this.estado = EstadoHabitacion.LIMPIEZA; // O el estado que corresponda después del check-out
+            this.estado = EstadoHabitacion.LIMPIEZA;
             ultimaModificacionEstado = LocalDateTime.now();
             return true;
         }
         return false;
     }
-
-
 
     @Override
     public boolean puedeOcupar() {
@@ -98,24 +81,4 @@ public class Habitacion implements Reservable, Checkable, Ocupable {
     public String getMotivoNoDisponibilidad() {
         return motivoNoDisponibilidad;
     }
-
-    @Override
-    public boolean cancelarReserva() {
-        if (estado == EstadoHabitacion.RESERVADA) {
-            reservas.clear();
-            estado = EstadoHabitacion.DISPONIBLE;
-            ultimaModificacionEstado = LocalDateTime.now();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean estaDisponible(String fechaInicio, String fechaFin, String tipo, TipoHabitacion tipoHabitacion) {
-        if (this.estado == EstadoHabitacion.DISPONIBLE && this.tipo == tipoHabitacion) {
-            return true;
-        }
-        return false;
-    }
-
 }
