@@ -94,13 +94,8 @@ public class Main {
                         case 1:
                             nuevoEstado = EstadoHabitacion.LIMPIEZA;
                             break;
+
                         case 2:
-                            nuevoEstado = EstadoHabitacion.REPARACION;
-                            break;
-                        case 3:
-                            nuevoEstado = EstadoHabitacion.DESINFECCION;
-                            break;
-                        case 4:
                             nuevoEstado = EstadoHabitacion.DISPONIBLE;
                             break;
                         default:

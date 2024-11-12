@@ -22,7 +22,7 @@ public class Habitacion implements Reservable, Checkable, Ocupable {
 
     // Método para cambiar el estado a disponible si han pasado 60 segundos
     public boolean puedeCambiarADisponible() {
-        if (estado == EstadoHabitacion.LIMPIEZA || estado == EstadoHabitacion.REPARACION || estado == EstadoHabitacion.DESINFECCION) {
+        if (estado == EstadoHabitacion.LIMPIEZA) {
             LocalDateTime ahora = LocalDateTime.now();
             return ultimaModificacionEstado.plusSeconds(60).isBefore(ahora);
         }

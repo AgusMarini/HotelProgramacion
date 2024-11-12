@@ -1,1 +1,1 @@
-[{"cantidadPasajeros":2,"serviciosAdicionales":[],"tipoHabitacion":"SUITE","nombre":"juan","dni":"43605203"},{"cantidadPasajeros":2,"serviciosAdicionales":[],"tipoHabitacion":"SIMPLE","nombre":"graciela","dni":"13600408"}]
+[{"cantidadPasajeros":2,"serviciosAdicionales":["Spa a las 10:00 AM","Restaurante a las 09:00 PM"],"tipoHabitacion":"SUITE","nombre":"Matias","dni":"40831320"}]
