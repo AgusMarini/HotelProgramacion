@@ -5,14 +5,12 @@ public class Administrador extends Usuario implements Autenticable {
     private ArrayList<Habitacion> habitaciones;
     private HashMap<String, Usuario> usuarios;
     private ArrayList<ServicioAdicional> serviciosExtras;
-    private String contrasena;
 
-    public Administrador(String nombre, String dni) {
-        super(nombre, dni);
+    public Administrador(String nombre, String dni, String contrasena) {
+        super(nombre, dni, contrasena);
         this.habitaciones = new ArrayList<>();
         this.usuarios = new HashMap<>();
         this.serviciosExtras = new ArrayList<>();
-        this.contrasena = contrasena;
     }
 
     @Override
@@ -20,10 +18,15 @@ public class Administrador extends Usuario implements Autenticable {
         System.out.println("Administrador: " + getNombre());
     }
 
-    public void agregarHabitacion(Hotel hotel, Habitacion habitacion) {
-        hotel.agregarHabitacion(habitacion);
+    @Override
+    public void verificarPermisos() {
+        // Los administradores siempre tienen acceso
+        System.out.println("Acceso concedido al administrador.");
     }
 
+    public void agregarHabitacion(Hotel hotel, Habitacion habitacion) {
+        hotel.agregarNuevaHabitacion(habitacion);
+    }
 
     public void modificarHabitacion(int numeroHabitacion, EstadoHabitacion nuevoEstado) {
         for (Habitacion habitacion : habitaciones) {
@@ -36,23 +39,28 @@ public class Administrador extends Usuario implements Autenticable {
         System.out.println("Habitación no encontrada.");
     }
 
-
     public void eliminarHabitacion(int numeroHabitacion) {
         habitaciones.removeIf(h -> h.getNumero() == numeroHabitacion);
         System.out.println("Habitación eliminada: " + numeroHabitacion);
     }
 
-
     @Override
     public boolean autenticar(String usuario, String contrasena) {
-
-        return getNombre().equals(usuario) && this.contrasena.equals(contrasena);
+        // Usar el nombre y la contraseña para autenticar
+        return getNombre().equals(usuario) && getContrasena().equals(contrasena);
     }
-
 
     @Override
     public void cambiarContrasena(String nuevaContrasena) {
-        this.contrasena = nuevaContrasena;
+        setContrasena(nuevaContrasena); // Usar el método de la clase `Usuario` si existe
         System.out.println("Contraseña actualizada correctamente.");
+    }
+
+    @Override
+    public String toString() {
+        return "Administrador{" +
+                "nombre='" + getNombre() + '\'' +
+                ", dni='" + getDni() + '\'' +
+                '}';
     }
 }

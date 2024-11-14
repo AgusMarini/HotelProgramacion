@@ -1,3 +1,6 @@
+import Exceptions.DatosCargadosInvalidosException;
+import Exceptions.FechaInvalidaException;
+import Exceptions.ReservaNoEncontradaException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -5,32 +8,35 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class Hotel {
-    private String nombre;
-    private static List<Habitacion> habitaciones;
-    private static List<Pasajero> pasajeros;
-    private static List<Reserva> reservas;
-    private List<ServicioAdicional> serviciosAdicionales;
+    private String nombreHotel;
+    private static Map<Integer, Habitacion> habitacionesMap;
+    private static List<Pasajero> listaPasajeros;
+    private static List<Reserva> listaReservas;
+    private List<ServicioAdicional> listaServicios;
 
-    public Hotel(String nombre) {
-        this.nombre = nombre;
-        habitaciones = new ArrayList<>();
-        pasajeros = new ArrayList<>();
-        reservas = new ArrayList<>();
-        serviciosAdicionales = new ArrayList<>();
+    public Hotel(String nombreHotel) {
+        this.nombreHotel = nombreHotel;
+        habitacionesMap = new HashMap<>();
+        listaPasajeros = new ArrayList<>();
+        listaReservas = new ArrayList<>();
+        listaServicios = new ArrayList<>();
 
-        inicializarHabitacionesPredeterminadas();
-        inicializarServiciosPredeterminados();
+        cargarHabitacionesIniciales();
+        inicializarServicios();
         cargarDatosPasajeros();
 
-        // Hilo para verificar las habitaciones cada 60 segundos
-        Thread verificadorHabitaciones = new Thread(() -> {
+        // Hilo de verificación para el estado de las habitaciones
+        Thread verificador = new Thread(() -> {
             while (true) {
                 try {
-                    verificarHabitacionesParaCambiarADisponible();
+                    actualizarEstadoHabitaciones();
                     Thread.sleep(60000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -38,151 +44,163 @@ public class Hotel {
             }
         });
 
-        verificadorHabitaciones.setDaemon(true);
-        verificadorHabitaciones.start();
+        verificador.setDaemon(true);
+        verificador.start();
+    }
+    public static List<Reserva> getListaReservas() {
+        return listaReservas;
     }
 
-    public void agregarHabitacion(Habitacion habitacion) {
-        for (Habitacion h : habitaciones) {
-            if (h.getNumero() == habitacion.getNumero()) {
-                System.out.println("Error: Ya existe una habitación con el número " + habitacion.getNumero());
-                return;
-            }
+    public void agregarNuevaHabitacion(Habitacion habitacion) {
+        if (habitacionesMap.containsKey(habitacion.getNumero())) {
+            throw new IllegalArgumentException("Error: El número de habitación ya existe.");
         }
-        habitaciones.add(habitacion);
-        System.out.println("Habitación " + habitacion.getNumero() + " agregada al inventario.");
+        habitacionesMap.put(habitacion.getNumero(), habitacion);
+        System.out.println("Habitación " + habitacion.getNumero() + " agregada exitosamente.");
     }
 
-    public void eliminarHabitacion(int numero) {
-        habitaciones.removeIf(h -> h.getNumero() == numero);
-        System.out.println("Habitación " + numero + " eliminada del inventario.");
+    public void eliminarHabitacion(int numeroHabitacion) {
+        if (habitacionesMap.remove(numeroHabitacion) != null) {
+            System.out.println("Habitación eliminada: " + numeroHabitacion);
+        } else {
+            System.out.println("No se encontró una habitación con el número proporcionado.");
+        }
     }
 
-    private void inicializarHabitacionesPredeterminadas() {
-        habitaciones.add(new Habitacion(101, TipoHabitacion.SIMPLE));
-        habitaciones.add(new Habitacion(102, TipoHabitacion.DOBLE));
-        habitaciones.add(new Habitacion(103, TipoHabitacion.SUITE));
-        habitaciones.add(new Habitacion(104, TipoHabitacion.SIMPLE));
-        habitaciones.add(new Habitacion(105, TipoHabitacion.DOBLE));
+    private void cargarHabitacionesIniciales() {
+        habitacionesMap.put(201, new Habitacion(201, TipoHabitacion.SIMPLE, 150));
+        habitacionesMap.put(202, new Habitacion(202, TipoHabitacion.DOBLE, 250));
+        habitacionesMap.put(203, new Habitacion(203, TipoHabitacion.SUITE, 350));
+        habitacionesMap.put(204, new Habitacion(204, TipoHabitacion.SIMPLE, 150));
+        habitacionesMap.put(205, new Habitacion(205, TipoHabitacion.DOBLE, 250));
     }
 
-    public void verificarHabitacionesParaCambiarADisponible() {
-        for (Habitacion habitacion : habitaciones) {
-            if (habitacion.puedeCambiarADisponible()) {
+    public void actualizarEstadoHabitaciones() {
+        for (Habitacion habitacion : habitacionesMap.values()) {
+            if (habitacion.puedeCambiarADisponible()) { // Usamos el método corregido
                 habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-
+                System.out.println("La habitación " + habitacion.getNumero() + " ha cambiado a disponible.");
             }
         }
     }
 
-    public void agregarPasajero(Pasajero pasajero) {
-        pasajeros.add(pasajero);
-        guardarDatosPasajeros();
+    public void registrarPasajero(Pasajero nuevoPasajero) {
+        listaPasajeros.add(nuevoPasajero);
+        guardarPasajerosEnArchivo();
     }
 
-    public List<Habitacion> listarHabitaciones() {
-        return new ArrayList<>(habitaciones);
-    }
-
-    public List<Habitacion> listarHabitacionesDisponibles() {
+    public List<Habitacion> obtenerHabitacionesDisponibles() {
         List<Habitacion> disponibles = new ArrayList<>();
-        for (Habitacion h : habitaciones) {
-            if (h.getEstado() == EstadoHabitacion.DISPONIBLE) {
-                disponibles.add(h);
+        for (Habitacion habitacion : habitacionesMap.values()) {
+            if (habitacion.estaDisponible()) {
+                disponibles.add(habitacion);
             }
         }
         return disponibles;
     }
-
-    public static List<Habitacion> listarHabitacionesNoDisponibles() {
-        List<Habitacion> noDisponibles = new ArrayList<>();
-        for (Habitacion h : habitaciones) {
-            if (h.getEstado() == EstadoHabitacion.LIMPIEZA || h.getEstado() == EstadoHabitacion.OCUPADA) {
-                noDisponibles.add(h);
+    public double obtenerCostoPorTipoHabitacion(TipoHabitacion tipo) {
+        for (Habitacion habitacion : habitacionesMap.values()) {
+            if (habitacion.getTipo() == tipo) {
+                return habitacion.getCosto();
             }
         }
-        return noDisponibles;
+        throw new IllegalArgumentException("No se encontró una habitación con el tipo especificado.");
     }
 
-    public static Habitacion buscarHabitacionDisponiblePorTipo(TipoHabitacion tipoHabitacion) {
-        for (Habitacion habitacion : habitaciones) {
-            if (habitacion.getTipo() == tipoHabitacion && habitacion.getEstado() == EstadoHabitacion.DISPONIBLE) {
+
+    public static Habitacion buscarHabitacionPorNumero(int numero) {
+        return habitacionesMap.get(numero);
+    }
+
+    public static Pasajero buscarPasajeroPorDNI(String dni) {
+        for (Pasajero pasajero : listaPasajeros) {
+            if (pasajero.getDni().equals(dni)) {
+                return pasajero;
+            }
+        }
+        return null;
+    }
+    private boolean esFechaDisponibleParaTipo(TipoHabitacion tipo, LocalDate fechaInicio, LocalDate fechaFin) {
+        for (Habitacion habitacion : habitacionesMap.values()) {
+            if (habitacion.getTipo() == tipo && habitacion.estaDisponible()) {
+                if (esFechaDisponible(habitacion, fechaInicio, fechaFin)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    public boolean crearReserva(Pasajero pasajero, TipoHabitacion tipo, int cantidadPersonas, List<String> serviciosExtras, LocalDate fechaInicio, LocalDate fechaFin) throws FechaInvalidaException {
+        if (fechaFin.isBefore(fechaInicio)) {
+            throw new FechaInvalidaException("La fecha de fin no puede ser anterior a la de inicio.");
+        }
+
+        // Verificar si hay habitaciones disponibles del tipo solicitado y si las fechas no se superponen
+        if (esFechaDisponibleParaTipo(tipo, fechaInicio, fechaFin)) {
+            Reserva reserva = new Reserva(pasajero, tipo, cantidadPersonas, serviciosExtras, -1, fechaInicio, fechaFin); // Usar -1 para indicar que aún no se ha asignado una habitación
+            listaReservas.add(reserva);
+            guardarReservasEnArchivo();
+            System.out.println("Reserva creada exitosamente. La habitación se asignará al realizar el Check-In.");
+            return true;
+        } else {
+            System.out.println("No hay habitaciones disponibles para el tipo solicitado en las fechas proporcionadas.");
+            return false;
+        }
+    }
+
+
+    public boolean cancelarReserva(String dniPasajero) {
+        for (Reserva reserva : listaReservas) {
+            if (reserva.getPasajero().getDni().equals(dniPasajero)) {
+                listaReservas.remove(reserva);
+                Habitacion habitacion = buscarHabitacionPorNumero(reserva.getNumeroHabitacion());
+                if (habitacion != null) {
+                    habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
+                }
+                System.out.println("Reserva cancelada para el pasajero con DNI: " + dniPasajero);
+                guardarReservasEnArchivo(); // Guardar cambios en archivo
+                return true;
+            }
+        }
+        System.out.println("No se encontró una reserva para el pasajero con DNI: " + dniPasajero);
+        return false;
+    }
+    public boolean esFechaDisponible(Habitacion habitacion, LocalDate fechaInicio, LocalDate fechaFin) {
+        for (Reserva reserva : listaReservas) {
+            if (reserva.getNumeroHabitacion() == habitacion.getNumero()) {
+                // Verificar si las fechas se superponen
+                if (!(fechaFin.isBefore(reserva.getFechaInicio()) || fechaInicio.isAfter(reserva.getFechaFin()))) {
+                    return false; // Las fechas se superponen, no está disponible
+                }
+            }
+        }
+        return true; // Las fechas no se superponen, está disponible
+    }
+
+
+    public static Habitacion buscarHabitacionPorTipo(TipoHabitacion tipo) {
+        for (Habitacion habitacion : habitacionesMap.values()) {
+            if (habitacion.getTipo() == tipo && habitacion.estaDisponible()) {
                 return habitacion;
             }
         }
         return null;
     }
 
-    public static Habitacion buscarHabitacionPorNumero(int numero) {
-        for (Habitacion h : habitaciones) {
-            if (h.getNumero() == numero) {
-                return h;
-            }
-        }
-        return null;
-    }
-
-    public static Pasajero buscarPasajeroPorDni(String dni) {
-        for (Pasajero p : pasajeros) {
-            if (p.getDni().equals(dni)) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    public boolean reservarHabitacion(Pasajero pasajero, TipoHabitacion tipoHabitacion, int cantidadPasajeros, List<String> serviciosAdicionales) {
-        Habitacion habitacionDisponible = buscarHabitacionDisponiblePorTipo(tipoHabitacion);
-
-        if (habitacionDisponible != null) {
-            habitacionDisponible.setEstado(EstadoHabitacion.RESERVADA);
-            Reserva nuevaReserva = new Reserva(pasajero, tipoHabitacion, cantidadPasajeros, serviciosAdicionales, habitacionDisponible.getNumero());
-            reservas.add(nuevaReserva);
-            guardarDatosReservas();
-            System.out.println("Habitación " + habitacionDisponible.getNumero() + " reservada con éxito.");
-            return true;
-        } else {
-            System.out.println("No hay habitaciones disponibles de ese tipo.");
-            return false;
-        }
-    }
-
-    public boolean cancelarReserva(String dniPasajero) {
-        Reserva reserva = buscarReservaPorDni(dniPasajero);
-        if (reserva != null) {
-            reservas.remove(reserva);
-            Habitacion habitacion = buscarHabitacionPorNumero(reserva.getNumeroHabitacion());
-            if (habitacion != null) {
-                habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-            }
-            guardarDatosReservas();
-            System.out.println("Reserva cancelada exitosamente.");
-            return true;
-        } else {
-            System.out.println("No se encontró una reserva con el DNI proporcionado.");
-            return false;
-        }
-    }
-
-    public static Reserva buscarReservaPorDni(String dni) {
-        for (Reserva reserva : reservas) {
-            if (reserva.getPasajero().getDni().equals(dni)) {
-                return reserva;
-            }
-        }
-        return null;
-    }
-
-    private void inicializarServiciosPredeterminados() {
+    private void inicializarServicios() {
         List<String> horariosSpa = List.of("10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM");
         List<String> horariosRestaurante = List.of("08:00 PM", "09:00 PM", "10:00 PM");
 
-        serviciosAdicionales.add(new ServicioAdicional("Spa", horariosSpa));
-        serviciosAdicionales.add(new ServicioAdicional("Restaurante", horariosRestaurante));
+        listaServicios.add(new ServicioAdicional("Spa", horariosSpa, 50.0));
+        listaServicios.add(new ServicioAdicional("Restaurante", horariosRestaurante, 30.0));
+        listaServicios.add(new ServicioAdicional("Gimnasio", List.of("6:00 AM", "8:00 AM", "6:00 PM"), 25.0));
+        listaServicios.add(new ServicioAdicional("Desayuno", List.of("7:00 AM", "9:00 AM", "11:00 AM"), 15.0));
     }
 
-    public ServicioAdicional buscarServicio(String nombre) {
-        for (ServicioAdicional servicio : serviciosAdicionales) {
+    public ServicioAdicional obtenerServicioPorNombre(String nombre) {
+        for (ServicioAdicional servicio : listaServicios) {
             if (servicio.getNombre().equalsIgnoreCase(nombre)) {
                 return servicio;
             }
@@ -190,9 +208,28 @@ public class Hotel {
         return null;
     }
 
-    public void guardarDatosPasajeros() {
+    private void cargarDatosPasajeros() {
+        try {
+            String contenido = new String(Files.readAllBytes(Paths.get("pasajeros.json")));
+            JSONArray jsonArray = new JSONArray(contenido);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonPasajero = jsonArray.getJSONObject(i);
+                String nombre = jsonPasajero.getString("nombre");
+                String dni = jsonPasajero.getString("dni");
+                String origen = jsonPasajero.getString("origen");
+                String domicilio = jsonPasajero.getString("domicilio");
+                TipoHabitacion tipoHabitacion = TipoHabitacion.valueOf(jsonPasajero.getString("tipo"));
+                Pasajero pasajero = new Pasajero(nombre, dni, origen, domicilio, tipoHabitacion);
+                listaPasajeros.add(pasajero);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void guardarPasajerosEnArchivo() {
         JSONArray jsonArray = new JSONArray();
-        for (Pasajero pasajero : pasajeros) {
+        for (Pasajero pasajero : listaPasajeros) {
             JSONObject jsonPasajero = new JSONObject();
             jsonPasajero.put("nombre", pasajero.getNombre());
             jsonPasajero.put("dni", pasajero.getDni());
@@ -209,15 +246,15 @@ public class Hotel {
         }
     }
 
-    public void guardarDatosReservas() {
+    private void guardarReservasEnArchivo() {
         JSONArray jsonArray = new JSONArray();
-        for (Reserva reserva : reservas) {
+        for (Reserva reserva : listaReservas) {
             JSONObject jsonReserva = new JSONObject();
             jsonReserva.put("nombre", reserva.getPasajero().getNombre());
             jsonReserva.put("dni", reserva.getPasajero().getDni());
             jsonReserva.put("tipoHabitacion", reserva.getTipoHabitacion().toString());
             jsonReserva.put("cantidadPasajeros", reserva.getCantidadPasajeros());
-            jsonReserva.put("serviciosAdicionales", new JSONArray(reserva.getServiciosAdicionales()));
+            jsonReserva.put("serviciosExtras", new JSONArray(reserva.getServiciosAdicionales()));
             jsonArray.put(jsonReserva);
         }
         try (FileWriter file = new FileWriter("reservas.json")) {
@@ -228,22 +265,13 @@ public class Hotel {
         }
     }
 
-    public void cargarDatosPasajeros() {
-        try {
-            String contenido = new String(Files.readAllBytes(Paths.get("pasajeros.json")));
-            JSONArray jsonArray = new JSONArray(contenido);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonPasajero = jsonArray.getJSONObject(i);
-                String nombre = jsonPasajero.getString("nombre");
-                String dni = jsonPasajero.getString("dni");
-                String origen = jsonPasajero.getString("origen");
-                String domicilio = jsonPasajero.getString("domicilio");
-                TipoHabitacion tipoHabitacion = TipoHabitacion.valueOf(jsonPasajero.getString("tipo"));
-                Pasajero pasajero = new Pasajero(nombre, dni, origen, domicilio, tipoHabitacion);
-                pasajeros.add(pasajero);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public String toString() {
+        return "Hotel{" +
+                "nombreHotel='" + nombreHotel + '\'' +
+                ", totalHabitaciones=" + habitacionesMap.size() +
+                ", totalPasajeros=" + listaPasajeros.size() +
+                ", totalReservas=" + listaReservas.size() +
+                '}';
     }
 }

@@ -1,18 +1,22 @@
+import Exceptions.AccesoNoAutorizadoException;
+import Exceptions.HabitacionNoDisponibleException;
 import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.Scanner;
 
-public class Recepcionista extends Usuario {
+public class Recepcionista extends Usuario implements Autenticable {
     private ArrayList<Habitacion> habitaciones;
+    private String contrasena;
 
-    public Recepcionista(String nombre, String dni) {
-        super(nombre, dni);
+    public Recepcionista(String nombre, String dni, String contrasena) {
+        super(nombre, dni,contrasena);
         this.habitaciones = new ArrayList<>();
+        this.contrasena = contrasena;
     }
 
     public void setHabitaciones(ArrayList<Habitacion> habitaciones) {
         this.habitaciones = habitaciones;
     }
-
 
     public void controlarDisponibilidad() {
         System.out.println("Habitaciones disponibles:");
@@ -27,66 +31,68 @@ public class Recepcionista extends Usuario {
         }
     }
 
+    public boolean realizarCheckIn(Habitacion habitacion, Pasajero pasajero) throws HabitacionNoDisponibleException {
+        LocalDate hoy = LocalDate.now(); // Fecha actual
 
-    public void realizarCheckIn(String dniPasajero) {
-        Pasajero pasajero = Hotel.buscarPasajeroPorDni(dniPasajero);
-        if (pasajero != null) {
-            Reserva reserva = Hotel.buscarReservaPorDni(dniPasajero);
-            if (reserva != null) {
-                Habitacion habitacionDisponible = Hotel.buscarHabitacionDisponiblePorTipo(reserva.getTipoHabitacion());
-                if (habitacionDisponible != null) {
-                    habitacionDisponible.realizarCheckIn(pasajero);
-                    System.out.println("Check-In realizado en la habitación " + habitacionDisponible.getNumero());
+        // Buscar la reserva correspondiente al pasajero y la habitación
+        for (Reserva reserva : Hotel.getListaReservas()) {
+            if (reserva.getPasajero().equals(pasajero) && reserva.getNumeroHabitacion() == habitacion.getNumero()) {
+                // Verificar si la fecha actual coincide con la fecha de inicio de la reserva
+                if (hoy.isEqual(reserva.getFechaInicio())) {
+                    // Realizar el check-in si la fecha es correcta
+                    habitacion.realizarCheckIn(pasajero);
+                    System.out.println("Check-In realizado con éxito para la habitación " + habitacion.getNumero());
+                    return true;
                 } else {
-                    System.out.println("No hay habitaciones disponibles del tipo reservado.");
+                    System.out.println("No se puede realizar el Check-In: La fecha actual no coincide con la fecha de inicio de la reserva (" + reserva.getFechaInicio() + ").");
+                    return false;
                 }
-            } else {
-                System.out.println("El pasajero no tiene una reserva.");
             }
-        } else {
-            System.out.println("Pasajero no encontrado.");
         }
+
+        throw new HabitacionNoDisponibleException("No se encontró una reserva válida para este pasajero y habitación.");
     }
 
 
-    public void realizarCheckOut(int numeroHabitacion) {
-        Scanner scanner = new Scanner(System.in);
-        Habitacion habitacion = Hotel.buscarHabitacionPorNumero(numeroHabitacion);
 
-        if (habitacion != null) {
-            if (habitacion.realizarCheckOut()) {
-                System.out.println("Check-Out realizado correctamente!");
-                System.out.println("Seleccione el estado de la habitación después del Check-Out:");
-                System.out.println("1. LIMPIEZA");
-                System.out.println("2. DISPONIBLE");
 
-                int opcionEstado = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (opcionEstado) {
-                    case 1:
-                        habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
-                        System.out.println("La habitación se ha marcado como en LIMPIEZA.");
-                        break;
-                    case 2:
-                        habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-                        System.out.println("La habitación se ha marcado como DISPONIBLE.");
-                        break;
-                    default:
-                        System.out.println("Opción no válida. La habitación se marcará como DISPONIBLE por defecto.");
-                        habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-                        break;
-                }
-            } else {
-                System.out.println("La habitación no está ocupada o no se pudo realizar el Check-Out.");
-            }
-        } else {
-            System.out.println("Habitación no encontrada.");
+    public boolean realizarCheckOut(Habitacion habitacion) throws HabitacionNoDisponibleException {
+        if (habitacion.getEstado() != EstadoHabitacion.OCUPADA) {
+            throw new HabitacionNoDisponibleException("La habitación " + habitacion.getNumero() + " no está ocupada y no se puede realizar el check-out.");
         }
+        return habitacion.realizarCheckOut();
+    }
+
+    public ArrayList<Habitacion> getHabitaciones() {
+        return habitaciones;
+    }
+
+    @Override
+    public void verificarPermisos() throws AccesoNoAutorizadoException {
+        throw new AccesoNoAutorizadoException("Acceso denegado: el recepcionista no tiene permisos suficientes.");
     }
 
     @Override
     public void mostrarInfo() {
         System.out.println("Recepcionista: " + getNombre());
+    }
+
+    @Override
+    public boolean autenticar(String usuario, String contrasena) {
+        return getNombre().equals(usuario) && this.contrasena.equals(contrasena);
+    }
+
+    @Override
+    public void cambiarContrasena(String nuevaContrasena) {
+        this.contrasena = nuevaContrasena;
+        System.out.println("Contraseña actualizada correctamente.");
+    }
+
+    @Override
+    public String toString() {
+        return "Recepcionista{" +
+                "nombre='" + getNombre() + '\'' +
+                ", dni='" + getDni() + '\'' +
+                '}';
     }
 }

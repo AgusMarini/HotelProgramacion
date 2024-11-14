@@ -10,14 +10,23 @@ public class Habitacion {
     private List<String> reservas;
     private String motivoNoDisponibilidad;
     private LocalDateTime ultimaModificacionEstado;
+    private double costo;
 
-    public Habitacion(int numero, TipoHabitacion tipo) {
+    public Habitacion(int numero, TipoHabitacion tipo, double costo) {
         this.numero = numero;
         this.tipo = tipo;
         this.estado = EstadoHabitacion.DISPONIBLE;
         this.motivoNoDisponibilidad = "";
         this.reservas = new ArrayList<>();
         this.ultimaModificacionEstado = LocalDateTime.now();
+        this.costo = costo;
+    }
+    public double getCosto() {
+        return costo;
+    }
+
+    public void setCosto(double costo) {
+        this.costo = costo;
     }
 
     // Método para cambiar el estado a disponible si han pasado 60 segundos
@@ -48,6 +57,21 @@ public class Habitacion {
         }
         return false;
     }
+    private double calcularCostoPorTipo(TipoHabitacion tipo) {
+        switch (tipo) {
+            case SIMPLE:
+                return 100.0;
+            case DOBLE:
+                return 150.0;
+            case SUITE:
+                return 200.0;
+            default:
+                return 0.0;
+        }
+    }
+    public boolean estaDisponible() {
+        return estado == EstadoHabitacion.DISPONIBLE;
+    }
 
     public EstadoHabitacion getEstado() {
         return estado;
@@ -73,4 +97,14 @@ public class Habitacion {
     public String getMotivoNoDisponibilidad() {
         return motivoNoDisponibilidad;
     }
+
+    @Override
+    public String toString() {
+        return "Habitacion{" +
+                "numero=" + numero +
+                ", tipo=" + tipo +
+                ", estado=" + estado +
+                '}';
+    }
+
 }
