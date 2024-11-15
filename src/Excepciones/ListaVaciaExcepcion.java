@@ -1,7 +1,7 @@
 package Excepciones;
 
 public class ListaVaciaExcepcion extends RuntimeException {
-  public ListaVaciaExcepcion(String message) {
-    super(message);
-  }
+    public ListaVaciaExcepcion() {
+        super("Error: esta lista esta vacia");
+    }
 }

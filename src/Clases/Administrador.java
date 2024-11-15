@@ -1,6 +1,7 @@
 package Clases;
 
 import Enums.EstadoHabitacion;
+import Enums.TipoHabitacion;
 import Enums.TipoUsuario;
 import Interfaces.Autenticable;
 import org.json.JSONObject;
@@ -11,8 +12,8 @@ import java.util.HashMap;
 public class Administrador extends Usuario implements Autenticable {
     private String contrasena;
 
-    public Administrador(String nombre,String apellido, String dni, String contrasena) {
-        super(nombre, dni, apellido, TipoUsuario.ADMINISTRADOR);
+    public Administrador(String nombre, String apellido, int dni, String contrasena) {
+        super(nombre, apellido, dni, TipoUsuario.ADMINISTRADOR);
         this.contrasena = contrasena;
     }
 
@@ -31,28 +32,16 @@ public class Administrador extends Usuario implements Autenticable {
         return jsonObject;
     }
 
-    /*
-    public Habitacion agregarHabitacion(){
+    public static Habitacion crearHabitacion(int numero, TipoHabitacion tipoHabitacion) {
+        // Crear la nueva habitación
 
-    }
-    /*
-    public void modificarHabitacion(int numeroHabitacion, EstadoHabitacion nuevoEstado) {
-        for (Habitacion habitacion : habitaciones) {
-            if (habitacion.getNumero() == numeroHabitacion) {
-                habitacion.setEstado(nuevoEstado);
-                System.out.println("Estado de la habitación " + numeroHabitacion + " actualizado a " + nuevoEstado);
-                return;
-            }
-        }
-        System.out.println("Habitación no encontrada.");
+        Habitacion nuevaHabitacion = new Habitacion(numero, tipoHabitacion);
+
+        return nuevaHabitacion;
     }
 
 
-    public void eliminarHabitacion(int numeroHabitacion) {
-        habitaciones.removeIf(h -> h.getNumero() == numeroHabitacion);
-        System.out.println("Habitación eliminada: " + numeroHabitacion);
-    }
-    */
+
 
     @Override
     public boolean autenticar(String usuario, String contrasena) {

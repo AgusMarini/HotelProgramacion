@@ -1,7 +1,7 @@
 package Excepciones;
 
 public class ReservaNoDisponibleException extends Exception {
-    public ReservaNoDisponibleException(String mensaje) {
-        super(mensaje);
+    public ReservaNoDisponibleException() {
+        super("Esta reserva no esta disponible");
     }
 }

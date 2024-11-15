@@ -8,8 +8,8 @@ import java.util.Scanner;
 
 public class Recepcionista extends Usuario {
 
-    public Recepcionista(String nombre, String apellido, String dni, TipoUsuario tipoUsuario) {
-        super(nombre, apellido, dni, tipoUsuario);
+    public Recepcionista(String nombre, String apellido, int dni) {
+        super(nombre, apellido, dni, TipoUsuario.RECEPECIONISTA);
     }
 
     /*

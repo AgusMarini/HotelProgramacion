@@ -2,6 +2,10 @@ package Clases;
 
 import Enums.EstadoHabitacion;
 import Enums.TipoHabitacion;
+import Excepciones.HabitacionNoDisponibleException;
+import Excepciones.HabitacionNoExisteExcepcion;
+import Excepciones.HbitacionYaExisteExcepcion;
+import Excepciones.ListaVaciaExcepcion;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,21 +22,31 @@ public class Hotel {
     private  GestorColeccion<Habitacion> habitaciones;
     private  GestorColeccion<Pasajero> pasajeros;
     private  GestorReservas reservas;
-    private GestorColeccion<Usuario> usuarios;
+    private Administrador administrador;
+    private Recepcionista recepcionista;
     //private GestorColeccion<ServicioAdicional> serviciosAdicionales;
 
 
 
-    public Hotel(String nombre) {
+    public Hotel(String nombre, Administrador administrador, Recepcionista recepcionista) {
         this.nombre = nombre;
         this.habitaciones = new GestorColeccion<>();
         this.reservas = new GestorReservas();
         this.pasajeros = new GestorColeccion<>();
-        this.usuarios = new GestorColeccion<>();
+        this.administrador = administrador;
+        this.recepcionista = recepcionista;
+
 
         inicializarHabitacionesPredeterminadas();
-        inicializarServiciosPredeterminados();
-        cargarDatosPasajeros();
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("administrador", administrador.toJson());
+
+        jsonObject.put("recepcionista", recepcionista.toJson());
+
+        JSONUtiles.uploadJSON(jsonObject, "Hotel");
+        cargarArchivo();
 /*
         // Hilo para verificar las habitaciones cada 60 segundos
         Thread verificadorHabitaciones = new Thread(() -> {
@@ -52,31 +66,26 @@ public class Hotel {
 
     }
 
-    // Método para agregar un usuario (administrador o recepcionista)
-    public void agregarUsuario(Usuario usuario) {
-        if (usuario instanceof Administrador) {
-            System.out.println("Administrador agregado: " + usuario.getNombre());
-        } else if (usuario instanceof Recepcionista) {
-            System.out.println("Recepcionista agregado: " + usuario.getNombre());
-        }
-        usuarios.agregarElemento(usuario);
+    public boolean agregarHabitacion(int numero, TipoHabitacion tipoHabitacion) throws HbitacionYaExisteExcepcion {
+        boolean habitacionAgregada = false;
+       if(habitacionExiste(numero) == true){
+           throw new HbitacionYaExisteExcepcion();
+       } else {
+           habitaciones.agregarElemento(new Habitacion(numero, tipoHabitacion));
+           System.out.println("Habitación " + numero + " agregada al inventario.");
+           habitacionAgregada = true;
+       }
+        return habitacionAgregada;
     }
 
-    public void agregarHabitacion(Habitacion habitacion) {
-        for (Habitacion h : habitaciones.obtenerTodos()) {
-            if (h.getNumero() == habitacion.getNumero()) {
-                System.out.println("Error: Ya existe una habitación con el número " + habitacion.getNumero());
-                return;
-            }
+    public void eliminarHabitacion(int numero) throws HabitacionNoExisteExcepcion {
+        if(habitacionExiste(numero) == false){
+            throw new HabitacionNoExisteExcepcion();
+        } else {
+            Habitacion habitacion = buscarHabitacionPorNumero(numero);
+            habitaciones.eliminarElemento(habitacion);
+            System.out.println("Habitación " + numero + " eliminada del inventario.");
         }
-        habitaciones.agregarElemento(habitacion);
-        System.out.println("Habitación " + habitacion.getNumero() + " agregada al inventario.");
-    }
-
-    public void eliminarHabitacion(int numero) {
-        Habitacion habitacion = buscarHabitacionPorNumero(numero);
-        habitaciones.eliminarElemento(habitacion);
-        System.out.println("Habitación " + numero + " eliminada del inventario.");
     }
 
     private void inicializarHabitacionesPredeterminadas() {
@@ -98,8 +107,10 @@ public class Hotel {
 */
     public void agregarPasajero(Pasajero pasajero) {
         pasajeros.agregarElemento(pasajero);
-        guardarDatosPasajeros();
+
     }
+
+    //HABITACIONES
 
 
     public List<Habitacion> listarHabitacionesDisponibles() {
@@ -139,7 +150,15 @@ public class Hotel {
         }
         return null;
     }
-
+    public boolean habitacionExiste(int numero){
+        boolean existe = false
+        for (Habitacion h : habitaciones.obtenerTodos()) {
+            if(h.getNumero() == numero) {
+                existe = true;
+            }
+        }
+        return existe;
+    }
     public Pasajero buscarPasajeroPorDni(int dni) {
         for (Pasajero p : pasajeros.obtenerTodos()) {
             if (p.getDni() == dni) {
@@ -163,7 +182,8 @@ public class Hotel {
         }
 
         // Crear y agregar la reserva
-        Reserva nuevaReserva = new Reserva(inicio, fin, numeroHabitacion, dniPasajero);
+
+        Reserva nuevaReserva = new Reserva(dniPasajero, numeroHabitacion, inicio, fin);
         reservas.agregarElemento(nuevaReserva);
         System.out.println("Reserva creada para el pasajero con DNI: " + dniPasajero + " en la habitación " + numeroHabitacion);
         return true;
@@ -206,6 +226,45 @@ public class Hotel {
         return null;
     }
 */
+
+    public StringBuilder listaPasajerostoString() throws ListaVaciaExcepcion {
+        StringBuilder sb = new StringBuilder();
+        if (pasajeros.estaVacia()){
+            sb.append("Error");
+            throw new ListaVaciaExcepcion();
+        } else {
+            for(Pasajero p : pasajeros.obtenerTodos()){
+                sb.append(p.toString());
+            }
+        }
+        return sb;
+    }
+
+    public StringBuilder listaHabitacionesToString() throws ListaVaciaExcepcion { //NUNCA VA A ESTAR VACIA YA QUE SE GENERAN UNAS POR DEFECTO
+        StringBuilder sb = new StringBuilder();
+        if (habitaciones.estaVacia()){
+            sb.append("Error");
+            throw new ListaVaciaExcepcion();
+        } else {
+            for(Habitacion h : habitaciones.obtenerTodos()){
+                sb.append(h.toString());
+            }
+        }
+        return sb;
+    }
+    public StringBuilder listaReservasToString() throws ListaVaciaExcepcion {
+        StringBuilder sb = new StringBuilder();
+        if (habitaciones.estaVacia()){
+            sb.append("Error");
+            throw new ListaVaciaExcepcion();
+        } else {
+            for(Reserva r : reservas.obtenerTodos()){
+                sb.append(r.toString());
+            }
+        }
+        return sb;
+    }
+
     public  JSONArray listaPasajerosToJson() {
         JSONArray jsonArray = new JSONArray();
         for (Pasajero pasajero : pasajeros.obtenerTodos()) {
@@ -246,6 +305,8 @@ public class Hotel {
         JSONArray reservasArray = listaReservaToJson();
 
         jsonObject.put("reservas", reservasArray);
+
+
 
         JSONUtiles.uploadJSON(jsonObject, "Hotel");
 

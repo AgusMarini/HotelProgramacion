@@ -34,5 +34,7 @@ public class GestorColeccion<T extends Jsonable> {
     public ArrayList<T> obtenerTodos() {
         return new ArrayList<>(elementos); // Retorna una copia de la lista para evitar modificaciones externas
     }
-
+    public boolean estaVacia(){
+        return elementos.isEmpty();
+    }
 }

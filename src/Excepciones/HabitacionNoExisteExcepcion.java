@@ -1,7 +1,7 @@
 package Excepciones;
 
 public class HabitacionNoExisteExcepcion extends RuntimeException {
-  public HabitacionNoExisteExcepcion(String message) {
-    super(message);
-  }
+    public HabitacionNoExisteExcepcion() {
+        super("Error: la habitacion no existe");
+    }
 }
