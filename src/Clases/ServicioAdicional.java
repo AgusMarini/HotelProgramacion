@@ -1,7 +1,11 @@
+package Clases;
+
+import Interfaces.Jsonable;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServicioAdicional {
+public class ServicioAdicional implements Jsonable {
     private String nombre;
     private List<String> horariosDisponibles;
     private List<String> reservas;
@@ -32,6 +36,6 @@ public class ServicioAdicional {
 
     public void cancelarReserva(String horario) {
         reservas.remove(horario);
-        System.out.println("Reserva cancelada para " + nombre + " en el horario: " + horario);
+        System.out.println("Clases.Reserva cancelada para " + nombre + " en el horario: " + horario);
     }
 }

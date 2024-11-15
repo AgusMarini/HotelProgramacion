@@ -1,3 +1,7 @@
+import Clases.*;
+import Enums.EstadoHabitacion;
+import Enums.TipoHabitacion;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -5,7 +9,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Hotel hotel = new Hotel("Hotel");
+        Hotel hotel = new Hotel("Clases.Hotel");
         Administrador admin = new Administrador("NombreAdmin", "12345678");
 
 
@@ -15,9 +19,9 @@ public class Main {
         boolean salir = false;
         while (!salir) {
             System.out.println("Seleccione su rol:");
-            System.out.println("1. Administrador");
-            System.out.println("2. Recepcionista");
-            System.out.println("3. Cancelar Reserva");
+            System.out.println("1. Clases.Administrador");
+            System.out.println("2. Clases.Recepcionista");
+            System.out.println("3. Cancelar Clases.Reserva");
             System.out.println("4. Salir");
             System.out.print("Seleccione una opción: ");
             int rol = scanner.nextInt();
@@ -52,7 +56,7 @@ public class Main {
     private static void menuAdministrador(Scanner scanner, Hotel hotel, Administrador admin) {
         boolean salir = false;
         while (!salir) {
-            System.out.println("\nMenú de Gestión de Hotel como Administrador");
+            System.out.println("\nMenú de Gestión de Clases.Hotel como Clases.Administrador");
             System.out.println("1. Agregar habitación");
             System.out.println("2. Eliminar habitación");
             System.out.println("3. Listar habitaciones");
@@ -123,12 +127,12 @@ public class Main {
     private static void menuRecepcionista(Scanner scanner, Hotel hotel, Recepcionista recepcionista) {
         boolean salir = false;
         while (!salir) {
-            System.out.println("Menú de Gestión de Hotel como Recepcionista");
+            System.out.println("Menú de Gestión de Clases.Hotel como Clases.Recepcionista");
             System.out.println("1. Realizar Check-In");
             System.out.println("2. Realizar Check-Out");
             System.out.println("3. Listar Habitaciones Ocupadas");
             System.out.println("4. Listar Habitaciones Disponibles");
-            System.out.println("5. Agregar reserva del Pasajero");
+            System.out.println("5. Agregar reserva del Clases.Pasajero");
             System.out.println("6. Controlar Disponibilidad de Habitaciones");
             System.out.println("7. Salir");
             System.out.print("Seleccione una opción: ");
@@ -194,7 +198,7 @@ public class Main {
 
                     Pasajero nuevoPasajero = new Pasajero(nombrePasajero, dniPasajero, origenPasajero, domicilioPasajero, tipoHabitacion);
                     hotel.agregarPasajero(nuevoPasajero);
-                    System.out.println("Pasajero agregado exitosamente.");
+                    System.out.println("Clases.Pasajero agregado exitosamente.");
 
                     System.out.print("Ingrese la cantidad de pasajeros para la reserva: ");
                     int cantidadPasajeros = scanner.nextInt();
@@ -226,7 +230,7 @@ public class Main {
                                     String horario = horarios.get(horarioSeleccionado);
                                     serviciosAdicionales.add(nombreServicio + " a las " + horario);
                                     servicio.reservarTurno(horario);
-                                    System.out.println("Reserva realizada para " + nombreServicio + " en el horario " + horario);
+                                    System.out.println("Clases.Reserva realizada para " + nombreServicio + " en el horario " + horario);
                                 } else {
                                     System.out.println("Horario no válido.");
                                 }
@@ -242,7 +246,7 @@ public class Main {
 
                     boolean reservaExitosa = hotel.reservarHabitacion(nuevoPasajero, tipoHabitacion, cantidadPasajeros, serviciosAdicionales);
                     if (reservaExitosa) {
-                        System.out.println("Reserva de habitación realizada exitosamente.");
+                        System.out.println("Clases.Reserva de habitación realizada exitosamente.");
                     } else {
                         System.out.println("No se pudo realizar la reserva de la habitación. No hay habitaciones disponibles del tipo seleccionado.");
                     }

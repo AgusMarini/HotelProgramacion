@@ -1,19 +1,18 @@
+package Clases;
+
+import Enums.EstadoHabitacion;
+import Enums.TipoUsuario;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Recepcionista extends Usuario {
-    private ArrayList<Habitacion> habitaciones;
 
-    public Recepcionista(String nombre, String dni) {
-        super(nombre, dni);
-        this.habitaciones = new ArrayList<>();
+    public Recepcionista(String nombre, String apellido, String dni, TipoUsuario tipoUsuario) {
+        super(nombre, apellido, dni, tipoUsuario);
     }
 
-    public void setHabitaciones(ArrayList<Habitacion> habitaciones) {
-        this.habitaciones = habitaciones;
-    }
-
-
+    /*
     public void controlarDisponibilidad() {
         System.out.println("Habitaciones disponibles:");
         if (habitaciones.isEmpty()) {
@@ -44,7 +43,7 @@ public class Recepcionista extends Usuario {
                 System.out.println("El pasajero no tiene una reserva.");
             }
         } else {
-            System.out.println("Pasajero no encontrado.");
+            System.out.println("Clases.Pasajero no encontrado.");
         }
     }
 
@@ -84,9 +83,5 @@ public class Recepcionista extends Usuario {
             System.out.println("Habitación no encontrada.");
         }
     }
-
-    @Override
-    public void mostrarInfo() {
-        System.out.println("Recepcionista: " + getNombre());
-    }
+*/
 }
