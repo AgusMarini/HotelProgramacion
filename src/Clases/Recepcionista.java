@@ -11,8 +11,8 @@ public class Recepcionista extends Usuario implements Autenticable {
 
     private int horarioTrabajo;
 
-    public Recepcionista(String nombre, String apellido, int dni, TipoUsuario tipoUsuario, String contrasena, int horarioTrabajo) {
-        super(nombre, apellido, dni, tipoUsuario, contrasena);
+    public Recepcionista(String nombre, String apellido, int dni, String contrasena, int horarioTrabajo) {
+        super(nombre, apellido, dni, TipoUsuario.RECEPECIONISTA, contrasena);
         this.horarioTrabajo = horarioTrabajo;
     }
 

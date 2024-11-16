@@ -12,8 +12,8 @@ import java.util.HashMap;
 public class Administrador extends Usuario implements Autenticable {
     private String permisosEspeciales;
 
-    public Administrador(String nombre, String apellido, int dni, TipoUsuario tipoUsuario, String contrasena, String permisosEspeciales) {
-        super(nombre, apellido, dni, tipoUsuario, contrasena);
+    public Administrador(String nombre, String apellido, int dni, String contrasena, String permisosEspeciales) {
+        super(nombre, apellido, dni,    TipoUsuario.ADMINISTRADOR, contrasena);
         this.permisosEspeciales = permisosEspeciales;
     }
 

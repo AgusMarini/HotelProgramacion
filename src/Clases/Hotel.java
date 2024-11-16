@@ -172,7 +172,7 @@ public class Hotel {
 
     /**CHECK OUT*/
 
-    public boolean realizarCheckOut(int numeroHabitacion, int dniPasajero) {
+    public boolean realizarCheckOut(int numeroHabitacion, int dniPasajero) throws HabitacionNoExisteExcepcion {
         Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
         boolean checkInrealizado = false;
 
@@ -217,9 +217,20 @@ public class Hotel {
 
     /**          PASAJEROS            */
 
-    public void agregarPasajero(Pasajero pasajero) {
-        pasajeros.agregarElemento(pasajero);
+    public void agregarPasajero(String nomre, String apellido, int dni, String origen, String domicilio) {
+        Pasajero p = new Pasajero(nomre, apellido,dni, origen, domicilio);
+        pasajeros.agregarElemento(p);
 
+    }
+    public boolean eliminarPasajero(int dniPasajero) throws PasajeroNoExisteExcepcion{
+        boolean eliminado = false;
+        Pasajero p = buscarPasajeroPorDni(dniPasajero);
+        if (!pasajeroExiste(p)){
+            throw new PasajeroNoExisteExcepcion();
+        } else {
+            pasajeros.eliminarElemento(p);
+            return true;
+        }
     }
 
     public StringBuilder pasajerosToString(){
@@ -238,7 +249,14 @@ public class Hotel {
         }
         return null;
     }
-
+    public boolean pasajeroExiste(Pasajero p){
+        for (Pasajero pasajero : pasajeros.obtenerTodos()){
+            if (pasajero.equals(p)){
+                return true;
+            }
+        }
+        return false;
+    }
     public StringBuilder historialReservasToStringMedianteDni(int dniPasajero){
         Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
         StringBuilder sb = new StringBuilder();
@@ -389,6 +407,7 @@ public class Hotel {
         JSONArray jsonArray = new JSONArray();
         for (Pasajero pasajero : pasajeros.obtenerTodos()) {
             JSONObject jsonPasajero = pasajero.toJson();
+            jsonArray.put(jsonPasajero);
         }
         return jsonArray;
     }

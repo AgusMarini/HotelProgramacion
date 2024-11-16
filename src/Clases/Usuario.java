@@ -1,10 +1,11 @@
 package Clases;
 
 import Enums.TipoUsuario;
+import Interfaces.Autenticable;
 import Interfaces.Jsonable;
 import org.json.JSONObject;
 
-public abstract class Usuario extends Persona{
+public abstract class Usuario extends Persona {
     private String nombreUsuario;
     private String contrasena;
     private TipoUsuario tipoUsuario;

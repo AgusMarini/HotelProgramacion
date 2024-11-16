@@ -66,6 +66,13 @@ public class Pasajero extends Persona{
         jsonObject.put("domicilio", domicilio);
         return jsonObject;
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pasajero pasajero = (Pasajero) o;
+        return getDni() == pasajero.getDni();
+    }
     public static Pasajero fromJson(JSONObject json) {
         String nombre = json.getString("nombre");
         String apellido = json.getString("apellido");
@@ -92,19 +99,6 @@ public class Pasajero extends Persona{
         this.historialReservas = historialReservas;
     }
 
-/*
-    // Método estático para crear un Clases.Pasajero desde un JSON
-    public static Pasajero fromJson(JSONObject jsonObject) {
-        // Extrae los atributos comunes de Clases.Usuario
-        String nombre = jsonObject.getString("nombre");
-        String dni = jsonObject.getString("dni");
 
-        // Extrae los atributos específicos de Clases.Pasajero
-        String origen = jsonObject.getString("origen");
-        String domicilio = jsonObject.getString("domicilio");
 
-        // Crea y retorna una instancia de Clases.Pasajero con los datos completos
-        return new Pasajero(nombre, dni, origen, domicilio);
-    }
- */
 }
