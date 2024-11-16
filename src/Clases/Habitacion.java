@@ -10,19 +10,26 @@ import Interfaces.Jsonable;
 import org.json.JSONObject;
 
 public class Habitacion implements Jsonable {
-    private int numero;
-    private EstadoHabitacion estado;
-    private TipoHabitacion tipo;
-    private int dniOcupante;
-    private String motivoNoDisponibilidad;
+        private int numero;
+        private EstadoHabitacion estado;
+        private TipoHabitacion tipo;
+        private int dniOcupante;
+        private String motivoNoDisponibilidad;
 
     public Habitacion(int numero, TipoHabitacion tipo) {
         this.numero = numero;
         this.tipo = tipo;
         this.estado = EstadoHabitacion.DISPONIBLE;
         this.motivoNoDisponibilidad = "";
+        this.dniOcupante = 0;
     }
-
+    public Habitacion(int numero, EstadoHabitacion estado, TipoHabitacion tipo, int dniOcupante, String motivoNoDisponibilidad) {
+        this.numero = numero;
+        this.estado = estado;
+        this.tipo = tipo;
+        this.dniOcupante = dniOcupante;
+        this.motivoNoDisponibilidad = motivoNoDisponibilidad;
+    }
     public EstadoHabitacion getEstado() {
         return estado;
     }
@@ -74,6 +81,16 @@ public class Habitacion implements Jsonable {
         return numero == that.numero;
     }
 
+    public static Habitacion fromJson(JSONObject json){
+        int numero = json.getInt("numero");
+        EstadoHabitacion estado = EstadoHabitacion.valueOf(json.getString("estado"));
+        TipoHabitacion tipo = TipoHabitacion.valueOf(json.getString("tipo"));
+        int dniOcupante = json.optInt("dniOcupante", 0); // Si no hay ocupante, por defecto 0
+        String motivoNoDisponibilidad = json.optString("motivoNoDisponibilidad", "");
+
+        return new Habitacion(numero, estado, tipo, dniOcupante, motivoNoDisponibilidad);
+
+    }
     // Método para convertir Clases.Habitacion a JSON
     public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();

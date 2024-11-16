@@ -10,16 +10,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Administrador extends Usuario implements Autenticable {
-    private String contrasena;
+    private String permisosEspeciales;
 
-    public Administrador(String nombre, String apellido, int dni, String contrasena) {
-        super(nombre, apellido, dni, TipoUsuario.ADMINISTRADOR);
-        this.contrasena = contrasena;
+    public Administrador(String nombre, String apellido, int dni, TipoUsuario tipoUsuario, String contrasena, String permisosEspeciales) {
+        super(nombre, apellido, dni, tipoUsuario, contrasena);
+        this.permisosEspeciales = permisosEspeciales;
+    }
+
+    @Override
+    public boolean autenticar(String usuario, String contrasena) {
+        return this.getNombreUsuario().equals(usuario) && this.getContrasena().equals(contrasena);
     }
 
     @Override
     public String toString() {
-        return "Contraseña: '" + contrasena + '\'' +
+        return "Contraseña: '" + getContrasena() + '\'' +
                 ", Dni:'" + getDni() + '\'' +
                 ", Nombre:'" + getNombre() + '\'' +
                 ", TipoUsuario:" + getTipoUsuario();
@@ -28,7 +33,7 @@ public class Administrador extends Usuario implements Autenticable {
     @Override
     public JSONObject toJson() {
         JSONObject jsonObject = super.toJson(); // Obtiene el JSON del método de la clase base
-        jsonObject.put("contraseña", contrasena); // Añade la contraseña
+        jsonObject.put("contrasena", getContrasena()); // Añade la contraseña
         return jsonObject;
     }
 
@@ -41,17 +46,12 @@ public class Administrador extends Usuario implements Autenticable {
     }
 
 
-
-
-    @Override
-    public boolean autenticar(String usuario, String contrasena) {
-        return getNombre().equals(usuario) && this.contrasena.equals(contrasena);
-    }
-
-
+/*
     @Override
     public void cambiarContrasena(String nuevaContrasena) {
-        this.contrasena = nuevaContrasena;
+        this.getContrasena() = nuevaContrasena;
         System.out.println("Contraseña actualizada correctamente.");
     }
+
+ */
 }

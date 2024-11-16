@@ -45,6 +45,15 @@ public class Reserva implements Jsonable {
         return !(fin.isBefore(fechaInicio) || inicio.isAfter(fechaFin));
     }
 
+    public static Reserva fromJson(JSONObject json) {
+        LocalDate fechaInicio = LocalDate.parse(json.getString("fechaInicio"));
+        LocalDate fechaFin = LocalDate.parse(json.getString("fechaFin"));
+        int numeroHabitacion = json.getInt("numeroHabitacion");
+        int dniPasajero = json.getInt("dniPasajero");
+
+        return new Reserva(dniPasajero, numeroHabitacion, fechaInicio, fechaFin);
+    }
+
     @Override
     public String toString() {
         return "Reserva:\n" +

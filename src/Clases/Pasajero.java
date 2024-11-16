@@ -2,6 +2,7 @@ package Clases;
 
 import Enums.TipoHabitacion;
 import Interfaces.Jsonable;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -65,6 +66,32 @@ public class Pasajero extends Persona{
         jsonObject.put("domicilio", domicilio);
         return jsonObject;
     }
+    public static Pasajero fromJson(JSONObject json) {
+        String nombre = json.getString("nombre");
+        String apellido = json.getString("apellido");
+        int dni = json.getInt("dni");
+        String origen = json.getString("origen");
+        String domicilio = json.getString("domicilio");
+
+        // Crear instancia del pasajero
+        Pasajero pasajero = new Pasajero(nombre, apellido, dni, origen, domicilio);
+
+        // Cargar historial de reservas
+        JSONArray reservasJson = json.optJSONArray("historialReservas");
+        if (reservasJson != null) {
+            List<Reserva> historialReservas = new ArrayList<>();
+            for (int i = 0; i < reservasJson.length(); i++) {
+                historialReservas.add(Reserva.fromJson(reservasJson.getJSONObject(i)));
+            }
+            pasajero.setHistorialReservas(historialReservas);
+        }
+        return pasajero;
+    }
+
+    public void setHistorialReservas(List<Reserva> historialReservas) {
+        this.historialReservas = historialReservas;
+    }
+
 /*
     // Método estático para crear un Clases.Pasajero desde un JSON
     public static Pasajero fromJson(JSONObject jsonObject) {

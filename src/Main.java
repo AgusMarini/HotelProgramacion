@@ -22,7 +22,7 @@ public class Main {
         Administrador admin = new Administrador("Juan", "Maniago", 43456838, "123456");
 
 
-        Recepcionista recepcionista = new Recepcionista("Tecla", "Farias", 44444444);
+        Recepcionista recepcionista = new Recepcionista("Tecla", "Farias", 44444444, );
         Hotel hotel = new Hotel("Hotel Maravilla", admin, recepcionista);
 
 
@@ -130,7 +130,8 @@ public class Main {
                 case 1:
                     System.out.print("Ingrese el DNI del pasajero: ");
                     String dniCheckIn = scanner.nextLine();
-                    recepcionista.realizarCheckIn(dniCheckIn); // Usar método del recepcionista
+
+                    // Usar método del recepcionista
                     break;
                 case 2:
                     System.out.print("Ingrese el número de habitación para Check-Out: ");

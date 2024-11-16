@@ -2,14 +2,27 @@ package Clases;
 
 import Enums.EstadoHabitacion;
 import Enums.TipoUsuario;
+import Interfaces.Autenticable;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Recepcionista extends Usuario {
+public class Recepcionista extends Usuario implements Autenticable {
 
-    public Recepcionista(String nombre, String apellido, int dni) {
-        super(nombre, apellido, dni, TipoUsuario.RECEPECIONISTA);
+    private int horarioTrabajo;
+
+    public Recepcionista(String nombre, String apellido, int dni, TipoUsuario tipoUsuario, String contrasena, int horarioTrabajo) {
+        super(nombre, apellido, dni, tipoUsuario, contrasena);
+        this.horarioTrabajo = horarioTrabajo;
+    }
+
+    public int getHorarioTrabajo() {
+        return horarioTrabajo;
+    }
+
+    @Override
+    public boolean autenticar(String usuario, String contrasena) {
+        return this.getNombreUsuario().equals(usuario) && this.getContrasena().equals(contrasena);
     }
 
     /*
