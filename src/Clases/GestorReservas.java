@@ -37,6 +37,18 @@ public class GestorReservas extends GestorColeccion<Reserva>{
                         !fecha.isAfter(reserva.getFechaFin()))
                 .collect(Collectors.toList());
     }
+    // Método para buscar una reserva específica por habitación, pasajero y fecha
+    public Reserva buscarReserva(int numeroHabitacion, int dniPasajero, LocalDate fecha) {
+        for (Reserva reserva : obtenerTodos()) {
+            if (reserva.getNumeroHabitacion() == numeroHabitacion &&
+                    reserva.getDniPasajero() == dniPasajero &&
+                    !fecha.isBefore(reserva.getFechaInicio()) &&
+                    !fecha.isAfter(reserva.getFechaFin())) {
+                return reserva; // Se encontró una reserva válida
+            }
+        }
+        return null; // No se encontró una reserva
+    }
 
     // Eliminar una reserva específica por habitación y fechas
     public boolean eliminarReserva(int numeroHabitacion, LocalDate inicio, LocalDate fin) {

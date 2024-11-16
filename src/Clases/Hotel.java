@@ -2,10 +2,7 @@ package Clases;
 
 import Enums.EstadoHabitacion;
 import Enums.TipoHabitacion;
-import Excepciones.HabitacionNoDisponibleException;
-import Excepciones.HabitacionNoExisteExcepcion;
-import Excepciones.HbitacionYaExisteExcepcion;
-import Excepciones.ListaVaciaExcepcion;
+import Excepciones.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -66,6 +63,10 @@ public class Hotel {
 
     }
 
+
+
+    /**              AGREGAR Y ELIMINAR HABITACIONES   */
+
     public boolean agregarHabitacion(int numero, TipoHabitacion tipoHabitacion) throws HbitacionYaExisteExcepcion {
         boolean habitacionAgregada = false;
        if(habitacionExiste(numero) == true){
@@ -88,29 +89,8 @@ public class Hotel {
         }
     }
 
-    private void inicializarHabitacionesPredeterminadas() {
-        habitaciones.agregarElemento(new Habitacion(101, TipoHabitacion.SIMPLE));
-        habitaciones.agregarElemento(new Habitacion(102, TipoHabitacion.DOBLE));
-        habitaciones.agregarElemento(new Habitacion(103, TipoHabitacion.SUITE));
-        habitaciones.agregarElemento(new Habitacion(104, TipoHabitacion.SIMPLE));
-        habitaciones.agregarElemento(new Habitacion(105, TipoHabitacion.DOBLE));
-    }
-/*
-    public void verificarHabitacionesParaCambiarADisponible() {
-        for (Habitacion habitacion : habitaciones) {
-            if (habitacion.puedeCambiarADisponible()) {
-                habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
 
-            }
-        }
-    }
-*/
-    public void agregarPasajero(Pasajero pasajero) {
-        pasajeros.agregarElemento(pasajero);
-
-    }
-
-    //HABITACIONES
+    /** LISTAR HABITACIONES POR SU ESTADO/TIPO/NUMERO */
 
 
     public List<Habitacion> listarHabitacionesDisponibles() {
@@ -151,7 +131,7 @@ public class Hotel {
         return null;
     }
     public boolean habitacionExiste(int numero){
-        boolean existe = false
+        boolean existe = false;
         for (Habitacion h : habitaciones.obtenerTodos()) {
             if(h.getNumero() == numero) {
                 existe = true;
@@ -159,6 +139,97 @@ public class Hotel {
         }
         return existe;
     }
+
+
+
+    /**CHECK IN*/
+
+    public boolean realizarCheckIn(int numeroHabitacion, int dniPasajero) throws HabitacionNoExisteExcepcion, ReservaNoValidaExcepcion {
+        Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
+        boolean checkInrealizado = false;
+        if (habitacion == null) {
+            throw new HabitacionNoExisteExcepcion();
+        } else {
+            LocalDate hoy = LocalDate.now();
+            Reserva reserva = reservas.buscarReserva(numeroHabitacion, dniPasajero, hoy);
+            if (reserva == null) {
+                throw new ReservaNoValidaExcepcion();
+            } else {
+                if (habitacion.getEstado() == EstadoHabitacion.RESERVADA) {
+                    habitacion.setEstado(EstadoHabitacion.OCUPADA);
+                    habitacion.setDniOcupante(dniPasajero);
+                    System.out.println("Check-in realizado para el pasajero con DNI: " + dniPasajero);
+                    checkInrealizado = true;
+                } else {
+                    System.out.println("La habitación NO ESTÁ en estado RESERVADA.");
+                }
+            }
+        }
+        return checkInrealizado;
+    }
+
+
+
+    /**CHECK OUT*/
+
+    public boolean realizarCheckOut(int numeroHabitacion, int dniPasajero) {
+        Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
+        boolean checkInrealizado = false;
+
+        if (habitacion == null) {
+            throw new HabitacionNoExisteExcepcion();
+        } else {
+            if (habitacion.getEstado() == EstadoHabitacion.OCUPADA && habitacion.getDniOcupante() == dniPasajero) {
+                habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
+                habitacion.setDniOcupante(0); // Liberar el DNI del ocupante
+                System.out.println("Check-out realizado para el pasajero con DNI: " + dniPasajero);
+                checkInrealizado = true;
+            } else {
+                System.out.println("Error: La habitación no está ocupada por el pasajero con DNI proporcionado.");
+            }
+        }
+        return checkInrealizado;
+
+    }
+
+    /** INICIAR HABITACIONES AUTOMATICAMENTE  */
+
+    private void inicializarHabitacionesPredeterminadas() {
+        habitaciones.agregarElemento(new Habitacion(101, TipoHabitacion.SIMPLE));
+        habitaciones.agregarElemento(new Habitacion(102, TipoHabitacion.DOBLE));
+        habitaciones.agregarElemento(new Habitacion(103, TipoHabitacion.SUITE));
+        habitaciones.agregarElemento(new Habitacion(104, TipoHabitacion.SIMPLE));
+        habitaciones.agregarElemento(new Habitacion(105, TipoHabitacion.DOBLE));
+    }
+/*
+    public void verificarHabitacionesParaCambiarADisponible() {
+        for (Habitacion habitacion : habitaciones) {
+            if (habitacion.puedeCambiarADisponible()) {
+                habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
+
+            }
+        }
+    }
+*/
+
+
+
+
+    /**          PASAJEROS            */
+
+    public void agregarPasajero(Pasajero pasajero) {
+        pasajeros.agregarElemento(pasajero);
+
+    }
+
+    public StringBuilder pasajerosToString(){
+        StringBuilder sb = new StringBuilder();
+        for(Pasajero p : pasajeros.obtenerTodos()){
+            sb.append(p.toString());
+        }
+        return sb;
+    }
+
     public Pasajero buscarPasajeroPorDni(int dni) {
         for (Pasajero p : pasajeros.obtenerTodos()) {
             if (p.getDni() == dni) {
@@ -167,6 +238,19 @@ public class Hotel {
         }
         return null;
     }
+
+    public StringBuilder historialReservasToStringMedianteDni(int dniPasajero){
+        Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
+        StringBuilder sb = new StringBuilder();
+        sb.append(pasajero.historiaReservasToString());
+        return sb;
+    }
+
+
+
+
+    /**           AGREGAR Y CANCELAR RESERVAS               */
+
 
     public boolean agregarReserva(int dniPasajero, int numeroHabitacion, LocalDate inicio, LocalDate fin) {
         // Verificar si la habitación existe
@@ -185,20 +269,43 @@ public class Hotel {
 
         Reserva nuevaReserva = new Reserva(dniPasajero, numeroHabitacion, inicio, fin);
         reservas.agregarElemento(nuevaReserva);
+
+
+        // Buscar al pasajero correspondiente y agregar la reserva a su historial
+        Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
+        if (pasajero != null) {
+            pasajero.agregarReservaAlHistorial(nuevaReserva);
+            System.out.println("Reserva agregada al historial del pasajero con DNI: " + dniPasajero);
+        } else {
+            System.out.println("Error: Pasajero no encontrado. La reserva solo estará registrada globalmente.");
+        }
+
         System.out.println("Reserva creada para el pasajero con DNI: " + dniPasajero + " en la habitación " + numeroHabitacion);
+
         return true;
     }
 
     // Método para cancelar una reserva desde la clase Hotel
-    public boolean cancelarReserva(int numeroHabitacion, LocalDate inicio, LocalDate fin) {
+    public boolean cancelarReserva(int dniPasajero, int numeroHabitacion, LocalDate inicio, LocalDate fin) {
         boolean cancelada = reservas.eliminarReserva(numeroHabitacion, inicio, fin);
         if (cancelada) {
             System.out.println("Reserva cancelada exitosamente para la habitación " + numeroHabitacion);
         } else {
             System.out.println("No se encontró ninguna reserva que coincida con los criterios especificados.");
         }
+        // Buscar al pasajero correspondiente y agregar la reserva a su historial
+        Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
+        if (pasajero != null) {
+            pasajero.eliminarReservaDelHistorial(buscarReservaPorDni(dniPasajero));
+            System.out.println("Reserva eliminada al historial del pasajero con DNI: " + dniPasajero);
+        } else {
+            System.out.println("Error: Pasajero no encontrado.No se pudo eliminar la reserva del historial del pasajero");
+        }
+
         return cancelada;
     }
+
+    /**   BUSCAR RESERVAS POR DNI       */
 
     public Reserva buscarReservaPorDni(int dni) {
         for (Reserva reserva : reservas.obtenerTodos()) {
@@ -208,6 +315,12 @@ public class Hotel {
         }
         return null;
     }
+
+
+
+
+
+
 /*
     private void inicializarServiciosPredeterminados() {
         List<String> horariosSpa = List.of("10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM");
@@ -226,6 +339,9 @@ public class Hotel {
         return null;
     }
 */
+
+
+    /**               MOSTRAR      LISTAS             */
 
     public StringBuilder listaPasajerostoString() throws ListaVaciaExcepcion {
         StringBuilder sb = new StringBuilder();
@@ -265,6 +381,10 @@ public class Hotel {
         return sb;
     }
 
+
+    /**             LISTAS        A         JSON      */
+
+
     public  JSONArray listaPasajerosToJson() {
         JSONArray jsonArray = new JSONArray();
         for (Pasajero pasajero : pasajeros.obtenerTodos()) {
@@ -290,6 +410,11 @@ public class Hotel {
         }
         return jsonArray;
     }
+
+
+    /**         CARGAR  ARCHIVO  JSON  CON   TODAS   LAS    LISTAS    */
+
+
     public void cargarArchivo(){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("nombre", nombre);

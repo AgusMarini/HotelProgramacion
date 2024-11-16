@@ -13,6 +13,7 @@ public class Habitacion implements Jsonable {
     private int numero;
     private EstadoHabitacion estado;
     private TipoHabitacion tipo;
+    private int dniOcupante;
     private String motivoNoDisponibilidad;
 
     public Habitacion(int numero, TipoHabitacion tipo) {
@@ -39,6 +40,15 @@ public class Habitacion implements Jsonable {
     }
     public String getMotivoNoDisponibilidad() {
         return motivoNoDisponibilidad;
+    }
+
+    // Getter y Setter para dniOcupante
+    public int getDniOcupante() {
+        return dniOcupante;
+    }
+
+    public void setDniOcupante(int dniOcupante) {
+        this.dniOcupante = dniOcupante;
     }
 
     public void cambiarEstadoHabitacion (EstadoHabitacion estadoAcambiar){
