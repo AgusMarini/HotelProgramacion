@@ -73,7 +73,7 @@ public class Pasajero extends Persona{
         Pasajero pasajero = (Pasajero) o;
         return getDni() == pasajero.getDni();
     }
-    public static Pasajero fromJson(JSONObject json) {
+    public static Pasajero fromJson(JSONObject json, Hotel hotel) {
         String nombre = json.getString("nombre");
         String apellido = json.getString("apellido");
         int dni = json.getInt("dni");
@@ -88,7 +88,7 @@ public class Pasajero extends Persona{
         if (reservasJson != null) {
             List<Reserva> historialReservas = new ArrayList<>();
             for (int i = 0; i < reservasJson.length(); i++) {
-                historialReservas.add(Reserva.fromJson(reservasJson.getJSONObject(i)));
+                historialReservas.add(Reserva.fromJson(reservasJson.getJSONObject(i), hotel));
             }
             pasajero.setHistorialReservas(historialReservas);
         }

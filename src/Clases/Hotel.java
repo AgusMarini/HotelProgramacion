@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ public class Hotel {
     private Administrador administrador;
     private GestorColeccion<Recepcionista> recepcionistas;
     private static final int MAX_RECEPCIONISTAS = 5;
+    private double recaudacionTotal;
     //private GestorColeccion<ServicioAdicional> serviciosAdicionales;
 
 
@@ -34,6 +36,7 @@ public class Hotel {
         this.pasajeros = new GestorColeccion<>();
         this.administrador = administrador;
         this.recepcionistas = new GestorColeccion<>();
+        this.recaudacionTotal = 0.0;
 
 /*
         // Hilo para verificar las habitaciones cada 60 segundos
@@ -53,7 +56,15 @@ public class Hotel {
         */
 
     }
-/**             MANEJO    RECEPCIONISTAS    MEDIANTE ADMIN       */
+
+    public double getRecaudacionTotal() {
+        return recaudacionTotal;
+    }
+
+    public void sumarRecaudacion(double monto){
+        this.recaudacionTotal += monto;
+    }
+    /**             MANEJO    RECEPCIONISTAS    MEDIANTE ADMIN       */
 
     /** Métodos para gestionar recepcionistas */
     public boolean agregarRecepcionista(Recepcionista recepcionista) throws RecepcionistaYaExisteExcepcion{
@@ -157,28 +168,6 @@ public class Hotel {
     }
 
 
-    /** LISTAR HABITACIONES POR SU ESTADO/TIPO/NUMERO */
-
-
-    public List<Habitacion> listarHabitacionesDisponibles() {
-        List<Habitacion> disponibles = new ArrayList<>();
-        for (Habitacion h : habitaciones.obtenerTodos()) {
-            if (h.getEstado() == EstadoHabitacion.DISPONIBLE) {
-                disponibles.add(h);
-            }
-        }
-        return disponibles;
-    }
-
-    public List<Habitacion> listarHabitacionesNoDisponibles() {
-        List<Habitacion> noDisponibles = new ArrayList<>();
-        for (Habitacion h: habitaciones.obtenerTodos()) {
-            if (h.getEstado() == EstadoHabitacion.LIMPIEZA || h.getEstado() == EstadoHabitacion.OCUPADA) {
-                noDisponibles.add(h);
-            }
-        }
-        return noDisponibles;
-    }
 
     public Habitacion buscarHabitacionDisponiblePorTipo(TipoHabitacion tipoHabitacion) {
         for (Habitacion habitacion : habitaciones.obtenerTodos()) {
@@ -209,7 +198,8 @@ public class Hotel {
 
 
 
-    /**CHECK IN*/
+    /**        CHECK IN          */
+//CADA VEZ QUE ESTE SE REALIZA SE SUMA EL PRECIO DE LA RESERVA A LA RECAUDACION TOTAL
 
     public boolean realizarCheckIn(int numeroHabitacion, int dniPasajero) throws HabitacionNoExisteExcepcion, ReservaNoValidaExcepcion {
         Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
@@ -223,6 +213,12 @@ public class Hotel {
                 throw new ReservaNoValidaExcepcion();
             } else {
                 if (habitacion.getEstado() == EstadoHabitacion.RESERVADA) {
+                    double precioTotal = reserva.getPrecioTotal();
+                    System.out.println("El precio total de la reserva es: $" + precioTotal);
+                    System.out.println("Procesando pago...");
+                    // Aquí podrías agregar lógica de validación de pago si es necesario
+
+
                     habitacion.setEstado(EstadoHabitacion.OCUPADA);
                     habitacion.setDniOcupante(dniPasajero);
                     System.out.println("Check-in realizado para el pasajero con DNI: " + dniPasajero);
@@ -241,7 +237,7 @@ public class Hotel {
 
     public boolean realizarCheckOut(int numeroHabitacion, int dniPasajero) throws HabitacionNoExisteExcepcion {
         Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
-        boolean checkInrealizado = false;
+        boolean checkOutrealizado = false;
 
         if (habitacion == null) {
             throw new HabitacionNoExisteExcepcion();
@@ -249,13 +245,24 @@ public class Hotel {
             if (habitacion.getEstado() == EstadoHabitacion.OCUPADA && habitacion.getDniOcupante() == dniPasajero) {
                 habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
                 habitacion.setDniOcupante(0); // Liberar el DNI del ocupante
+                // Buscar la reserva correspondiente
+                LocalDate hoy = LocalDate.now();
+                Reserva reserva = reservas.buscarReserva(numeroHabitacion, dniPasajero, hoy);
+                if (reserva != null) {
+                    sumarRecaudacion(reserva.getPrecioTotal());
+                    // Eliminar la reserva de la lista global
+                    System.out.println("Se sumaron $" + reserva.getPrecioTotal() + " a la recaudación total.");
+                    reservas.eliminarElemento(reserva);
+
+                }
+
                 System.out.println("Check-out realizado para el pasajero con DNI: " + dniPasajero);
-                checkInrealizado = true;
+                checkOutrealizado = true;
             } else {
                 System.out.println("Error: La habitación no está ocupada por el pasajero con DNI proporcionado.");
             }
         }
-        return checkInrealizado;
+        return checkOutrealizado;
 
     }
 
@@ -284,15 +291,21 @@ public class Hotel {
 
     /**          PASAJEROS            */
 
-    public void agregarPasajero(String nomre, String apellido, int dni, String origen, String domicilio) {
-        Pasajero p = new Pasajero(nomre, apellido,dni, origen, domicilio);
-        pasajeros.agregarElemento(p);
-
+    public boolean agregarPasajero(String nombre, String apellido, int dni, String origen, String domicilio) throws PasajeroExistenteExcepcion{
+        boolean agregado = false;
+        if(pasajeroExiste(dni)){
+            throw new PasajeroExistenteExcepcion();
+        } else {
+            Pasajero p = new Pasajero(nombre, apellido,dni, origen, domicilio);
+            pasajeros.agregarElemento(p);
+            agregado = true;
+        }
+        return agregado;
     }
     public boolean eliminarPasajero(int dniPasajero) throws PasajeroNoExisteExcepcion{
         boolean eliminado = false;
         Pasajero p = buscarPasajeroPorDni(dniPasajero);
-        if (!pasajeroExiste(p)){
+        if (!pasajeroExiste(dniPasajero)){
             throw new PasajeroNoExisteExcepcion();
         } else {
             pasajeros.eliminarElemento(p);
@@ -316,9 +329,9 @@ public class Hotel {
         }
         return null;
     }
-    public boolean pasajeroExiste(Pasajero p){
+    public boolean pasajeroExiste(int dni){
         for (Pasajero pasajero : pasajeros.obtenerTodos()){
-            if (pasajero.equals(p)){
+            if (pasajero.getDni() == dni){
                 return true;
             }
         }
@@ -350,9 +363,12 @@ public class Hotel {
             return false;
         }
 
+
+
         // Crear y agregar la reserva
 
         Reserva nuevaReserva = new Reserva(dniPasajero, numeroHabitacion, inicio, fin);
+        nuevaReserva.setPrecioTotal(nuevaReserva.calcularPrecioTotal(habitacion.getTipo()));
         reservas.agregarElemento(nuevaReserva);
 
 
@@ -400,6 +416,7 @@ public class Hotel {
         }
         return null;
     }
+
 
 
 
@@ -477,6 +494,55 @@ public class Hotel {
         }
         return sb;
     }
+    /** LISTAR HABITACIONES POR SU ESTADO/TIPO/NUMERO */
+
+
+    public StringBuilder listarHabitacionesDisponiblesPorFecha(LocalDate inicio, LocalDate fin) throws ListaVaciaExcepcion {
+        StringBuilder sb = new StringBuilder();
+        int count = 0;
+
+        if (habitaciones.estaVacia()) {
+            sb.append("No se encuentran habitaciones en la lista");
+            throw new ListaVaciaExcepcion();
+        } else {
+            for (Habitacion h : habitaciones.obtenerTodos()) {
+                if (h.getEstado() == EstadoHabitacion.DISPONIBLE && reservas.estaHabitacionDisponible(h.getNumero(), inicio, fin)) {
+                    count++;
+                    sb.append(h.toString());
+                }
+            }
+        }
+
+        if (count == 0) {
+            sb.append("No hay habitaciones disponibles en las fechas especificadas");
+        }
+        return sb;
+    }
+
+    public StringBuilder listarHabitacionesDisponiblesAhora() throws ListaVaciaExcepcion{
+        StringBuilder sb = new StringBuilder();
+        int count = 0;
+
+        if (habitaciones.estaVacia()) {
+            sb.append("No se encuentran habitaciones en la lista");
+            throw new ListaVaciaExcepcion();
+        } else {
+            for (Habitacion h: habitaciones.obtenerTodos()) {
+                if (h.getEstado() == EstadoHabitacion.DISPONIBLE) {
+                    count++;
+                    sb.append(h.toString());
+                }
+            }
+        }
+
+        if (count == 0) {
+            sb.append("No hay habitaciones disponibles en las fechas especificadas");
+        }
+        return sb;
+
+    }
+
+
 
     /**             LISTAS        A         JSON      */
 
@@ -516,12 +582,19 @@ public class Hotel {
         return jsonArray;
     }
 
+
+
+
+
+
+
     /**         CARGAR  ARCHIVO  JSON  CON   TODAS   LAS    LISTAS    */
 
 
     public void cargarArchivo(){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("nombre", nombre);
+        jsonObject.put("recaudacionTotal", recaudacionTotal);
 
         JSONArray habitacionesArray = listaHabitacionesToJson();
 
@@ -554,7 +627,8 @@ public class Hotel {
 
         // Cargar nombre del hotel
         this.nombre = jsonObject.getString("nombre");
-
+        // cargar recaudacion
+        this.recaudacionTotal = jsonObject.getDouble("recaudacionTotal");
         // Cargar habitaciones
         JSONArray habitacionesArray = jsonObject.getJSONArray("habitaciones");
         for (int i = 0; i < habitacionesArray.length(); i++) {
@@ -567,7 +641,7 @@ public class Hotel {
         JSONArray pasajerosArray = jsonObject.getJSONArray("pasajeros");
         for (int i = 0; i < pasajerosArray.length(); i++) {
             JSONObject pasajeroJson = pasajerosArray.getJSONObject(i);
-            Pasajero pasajero = Pasajero.fromJson(pasajeroJson);
+            Pasajero pasajero = Pasajero.fromJson(pasajeroJson, this);
             this.pasajeros.agregarElemento(pasajero);
         }
 
@@ -575,7 +649,7 @@ public class Hotel {
         JSONArray reservasArray = jsonObject.getJSONArray("reservas");
         for (int i = 0; i < reservasArray.length(); i++) {
             JSONObject reservaJson = reservasArray.getJSONObject(i);
-            Reserva reserva = Reserva.fromJson(reservaJson);
+            Reserva reserva = Reserva.fromJson(reservaJson, this);
             this.reservas.agregarElemento(reserva);
         }
 

@@ -14,14 +14,15 @@ import java.util.List;
 import java.util.Scanner;
 
 /** ANOTACIONES  */
-//IMPLEMENTAR EXCEPCION LISTA VACIA A LAS FUNCIONES DE ELIMINAR ELEMENTOS DE UNA LISTA
-//IMPLEMENTAR EXCEPCION PARA EL MENU EN CASO DE PONER UN STRING EN VEZ DE UN NUMERO
+
+//IMPLEMENTAR EXCEPCION PARA EL MENU EN CASO DE PONER UN STRING EN VEZ DE UN NUMERO (no es importante)
 //PONER LAS OPCIONES PARA VER LAS LISTAS DE LOS PASAJEROS, RESERVAS, HABITACIONES UTILIZANDO LOS METODOS TOSTRING
 // CHEQUEAR MANEJO DE DATOS CON EL ARCHIVO JSON (QUE QUEDE TODO GUARDADO AL FINALIZAR EL PROGRAMA, CREO QUE ESTO ESTA BIEN)
-// HACER TESTING A FONDO, IGUALMENTE QUEDAN COSAS POR AGREGAR
-// SE PODRIA SOBREESCRIBIR  METODOS EQUALS EN LAS CLASES, PERO TODAVIA NO VEOQ UE SEA NECESARIO
-// ES REALMENTE UTIL TENER LAS CLASES RECEPCIONISTA Y ADMINISTRADOR? NO CREO, PERO QUEDA ASI IMPLEMENTAMOS LA CLASE AUTENTICABLE QUE EN REALIDAD NO TIENE INUTILIDAD PERO TODAVIA NO SE NOS OCURRE UNA INTERFAZ UTIL JEJEEE
-// AGREGAR RECAUDACION TOTAL
+// HACER TESTING DEL MENU RECEPCIONISTA Y COMPLETARLO ANTES
+// AGREGAR RECAUDACION TOTAL(YA SE AGREGO SOLO HAY QUE PONER LA OPCION EN EL MENU DE ADMIN PARA MOSTAR CUANTO SE VA RECAUDANDO)
+//QUEDA IMPLEMENTAR EL TRY/CATCH EN EL MAIN SOLO DE LAS OPCIONES PARA AGREGAR Y CANCELAR RESERVAS
+/**IMPORTANTE VER SI FUNCIONA EL TEMA DE LAS FECHAS Y DISPONIBILIDAD, TMB QUEDA POR REVISAR QUE HACER CON EL ESTADO LIMPIEZA
+ * CON ESTO ULTIMO PROBEMOS IMPLEMENTAR LO QUE HIZO AGUS DEL TEMPORARIZADOR ESE */
 /** SI SE LES OCURREN OTRAS COSAS ANOTEN  POR DEBAJO !!!!!!!!!!!!*/
 public class Main {
     public static void main(String[] args) {
@@ -212,9 +213,13 @@ public class Main {
             System.out.println("1. Realizar check-in");
             System.out.println("2. Realizar check-out");
             System.out.println("3. Agregar cliente(antes de realizar reserva)");
-            System.out.println("4. Agregar reserva");
-            System.out.println("5. Cancelar reserva");
-            System.out.println("6. Ver historial de reservas de un pasajero");
+            System.out.println("4. Ver habitaciones disponibles por fecha");
+            System.out.println("5. Ver habitaciones disponibles ahora");
+            System.out.println("6. Ver todas las habitaciones");
+            System.out.println("7. Agregar reserva");
+            System.out.println("8. Cancelar reserva");
+            System.out.println("9. Ver todas las reservas");
+            System.out.println("10. Ver historial de reservas de un pasajero");
             System.out.println("0. Volver al menú principal");
             System.out.print("Seleccione una opción: ");
 
@@ -281,6 +286,34 @@ public class Main {
                         }
                         break;
                     case 4:
+                        try {
+                            System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
+                            LocalDate inicio = LocalDate.parse(scanner.next());
+                            System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
+                            LocalDate fin = LocalDate.parse(scanner.next());
+                            System.out.println(hotel.listarHabitacionesDisponiblesPorFecha(inicio, fin));
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
+                        break;
+                    case 5:
+                        try{
+                            System.out.println(hotel.listarHabitacionesDisponiblesAhora());
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
+                        break;
+                    case 6:
+                        try {
+                            System.out.println(hotel.listaHabitacionesToString());
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
+                        break;
+                    case 7:
                         System.out.print("Ingrese DNI del pasajero: ");
                         int dniReserva = scanner.nextInt();
                         scanner.nextLine(); // Limpiar buffer
@@ -293,7 +326,7 @@ public class Main {
                         LocalDate fin = LocalDate.parse(scanner.next());
                         hotel.agregarReserva(dniReserva, numeroReserva, inicio, fin);
                         break;
-                    case 5:
+                    case 8:
                         System.out.print("Ingrese DNI del pasajero: ");
                         int dniCancel = scanner.nextInt();
                         scanner.nextLine(); // Limpiar buffer
@@ -306,7 +339,15 @@ public class Main {
                         LocalDate finCancel = LocalDate.parse(scanner.next());
                         hotel.cancelarReserva(dniCancel, numeroCancel, inicioCancel, finCancel);
                         break;
-                    case 6:
+                    case 9:
+                        try{
+                            System.out.println(hotel.listaReservasToString());
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
+                        break;
+                    case 10:
                         System.out.print("Ingrese DNI del pasajero: ");
                         int dniHistorial = scanner.nextInt();
                         scanner.nextLine(); // Limpiar buffer
