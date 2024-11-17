@@ -50,7 +50,7 @@ public class Pasajero extends Persona{
     }
 
     public String toString(){
-        return "Pasajero: \n" +
+        return "\nPasajero: \n" +
                 "  Dni: " + getDni() +
                 "  Nombre: " + getNombre() +
                 "  Apellido: " + getApellido() +

@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Hotel {
     private String nombre;
@@ -20,30 +21,20 @@ public class Hotel {
     private  GestorColeccion<Pasajero> pasajeros;
     private  GestorReservas reservas;
     private Administrador administrador;
-    private Recepcionista recepcionista;
+    private GestorColeccion<Recepcionista> recepcionistas;
+    private static final int MAX_RECEPCIONISTAS = 5;
     //private GestorColeccion<ServicioAdicional> serviciosAdicionales;
 
 
 
-    public Hotel(String nombre, Administrador administrador, Recepcionista recepcionista) {
+    public Hotel(String nombre, Administrador administrador) {
         this.nombre = nombre;
         this.habitaciones = new GestorColeccion<>();
         this.reservas = new GestorReservas();
         this.pasajeros = new GestorColeccion<>();
         this.administrador = administrador;
-        this.recepcionista = recepcionista;
+        this.recepcionistas = new GestorColeccion<>();
 
-
-        inicializarHabitacionesPredeterminadas();
-
-        JSONObject jsonObject = new JSONObject();
-
-        jsonObject.put("administrador", administrador.toJson());
-
-        jsonObject.put("recepcionista", recepcionista.toJson());
-
-        JSONUtiles.uploadJSON(jsonObject, "Hotel");
-        cargarArchivo();
 /*
         // Hilo para verificar las habitaciones cada 60 segundos
         Thread verificadorHabitaciones = new Thread(() -> {
@@ -61,6 +52,82 @@ public class Hotel {
         verificadorHabitaciones.start();
         */
 
+    }
+/**             MANEJO    RECEPCIONISTAS    MEDIANTE ADMIN       */
+
+    /** Métodos para gestionar recepcionistas */
+    public boolean agregarRecepcionista(Recepcionista recepcionista) throws RecepcionistaYaExisteExcepcion{
+        boolean agregado = false;
+        if (recepExiste(recepcionista.getNombreUsuario())){
+            throw new RecepcionistaYaExisteExcepcion();
+        } else {
+            if (recepcionistas.obtenerTodos().size() >= MAX_RECEPCIONISTAS) {
+                System.out.println("No se pueden agregar más recepcionistas. Límite alcanzado.");
+            } else {
+                recepcionistas.agregarElemento(recepcionista);
+                System.out.println("Recepcionista agregado exitosamente.");
+                agregado = true;
+            }
+        }
+        return agregado;
+    }
+
+    public boolean eliminarRecepcionista(String nombreUsuario) throws RecepcionistaNoExiste, ListaVaciaExcepcion{
+        boolean eliminado = false;
+        if(!recepExiste(nombreUsuario)){
+            throw new RecepcionistaNoExiste();
+        } else if(recepcionistas.estaVacia()){
+            throw new ListaVaciaExcepcion();
+        } else {
+            for (Recepcionista r : recepcionistas.obtenerTodos()) {
+                if (r.getNombreUsuario().equals(nombreUsuario) ) {
+                    recepcionistas.eliminarElemento(r);
+                    System.out.println("Recepcionista eliminado exitosamente.");
+                    eliminado = true;
+                }
+            }
+        }
+
+        return eliminado;
+    }
+
+    public boolean recepExiste(String nombreUsuario){
+        for(Recepcionista r : recepcionistas.obtenerTodos()){
+            if (r.getNombreUsuario().equals(nombreUsuario)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Recepcionista buscarPorNombreUsuarioRecepcionista(String nombreUsuario) throws RecepcionistaNoExiste{
+        if (!recepExiste(nombreUsuario)){
+            throw new RecepcionistaNoExiste();
+        } else {
+            for (Recepcionista r : recepcionistas.obtenerTodos()){
+                if (r.getNombreUsuario().equals(nombreUsuario)){
+                    return r;
+                }
+            }
+        }
+        return null;
+    }
+
+    public GestorColeccion<Recepcionista> getRecepcionistas() {
+        return recepcionistas;
+    }
+
+    // Método para autenticar recepcionistas
+    public boolean autenticarRecepcionista(String nombreUsuario, String contrasena) {
+        boolean autenticado =false;
+        try {
+            Recepcionista recepcionista = buscarPorNombreUsuarioRecepcionista(nombreUsuario);
+            recepcionista.autenticar(nombreUsuario, contrasena);
+            autenticado = true;
+        } catch (RecepcionistaNoExiste e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        return autenticado;
     }
 
 
@@ -374,7 +441,7 @@ public class Hotel {
         return sb;
     }
 
-    public StringBuilder listaHabitacionesToString() throws ListaVaciaExcepcion { //NUNCA VA A ESTAR VACIA YA QUE SE GENERAN UNAS POR DEFECTO
+    public StringBuilder listaHabitacionesToString() throws ListaVaciaExcepcion { //NUNCA VA A ESTAR VACIA YA QUE SE GENERAN UNAS POR DEFECTO O SI? :)
         StringBuilder sb = new StringBuilder();
         if (habitaciones.estaVacia()){
             sb.append("Error");
@@ -388,7 +455,7 @@ public class Hotel {
     }
     public StringBuilder listaReservasToString() throws ListaVaciaExcepcion {
         StringBuilder sb = new StringBuilder();
-        if (habitaciones.estaVacia()){
+        if (reservas.estaVacia()){
             sb.append("Error");
             throw new ListaVaciaExcepcion();
         } else {
@@ -398,7 +465,18 @@ public class Hotel {
         }
         return sb;
     }
-
+    public StringBuilder listaRecepcionistasToString() throws ListaVaciaExcepcion {
+        StringBuilder sb = new StringBuilder();
+        if (recepcionistas.estaVacia()){
+            sb.append("Error");
+            throw new ListaVaciaExcepcion();
+        } else {
+            for(Recepcionista r : recepcionistas.obtenerTodos()){
+                sb.append(r.toString());
+            }
+        }
+        return sb;
+    }
 
     /**             LISTAS        A         JSON      */
 
@@ -430,6 +508,13 @@ public class Hotel {
         return jsonArray;
     }
 
+    public JSONArray listaRecepcionistasToJson() {
+        JSONArray jsonArray = new JSONArray();
+        for (Recepcionista recepcionista : recepcionistas.obtenerTodos()) {
+            jsonArray.put(recepcionista.toJson());
+        }
+        return jsonArray;
+    }
 
     /**         CARGAR  ARCHIVO  JSON  CON   TODAS   LAS    LISTAS    */
 
@@ -450,9 +535,58 @@ public class Hotel {
 
         jsonObject.put("reservas", reservasArray);
 
+        JSONArray recepcionistasArray = listaRecepcionistasToJson(); // Lista de recepcionistas
+        jsonObject.put("recepcionistas", recepcionistasArray);
 
 
         JSONUtiles.uploadJSON(jsonObject, "Hotel");
+    }
 
+    /**  METODO PARA CARGAR DESDE EL ARCHIVO JSON AL BUFFER */
+    public void cargarDesdeArchivo() {
+        String contenido = JSONUtiles.downloadJSON("Hotel"); // Leer el archivo JSON
+        if (contenido.isEmpty()) {
+            System.out.println("No se encontró un archivo JSON existente.");
+            return;
+        }
+
+        JSONObject jsonObject = new JSONObject(contenido);
+
+        // Cargar nombre del hotel
+        this.nombre = jsonObject.getString("nombre");
+
+        // Cargar habitaciones
+        JSONArray habitacionesArray = jsonObject.getJSONArray("habitaciones");
+        for (int i = 0; i < habitacionesArray.length(); i++) {
+            JSONObject habitacionJson = habitacionesArray.getJSONObject(i);
+            Habitacion habitacion = Habitacion.fromJson(habitacionJson);
+            this.habitaciones.agregarElemento(habitacion);
+        }
+
+        // Cargar pasajeros
+        JSONArray pasajerosArray = jsonObject.getJSONArray("pasajeros");
+        for (int i = 0; i < pasajerosArray.length(); i++) {
+            JSONObject pasajeroJson = pasajerosArray.getJSONObject(i);
+            Pasajero pasajero = Pasajero.fromJson(pasajeroJson);
+            this.pasajeros.agregarElemento(pasajero);
+        }
+
+        // Cargar reservas
+        JSONArray reservasArray = jsonObject.getJSONArray("reservas");
+        for (int i = 0; i < reservasArray.length(); i++) {
+            JSONObject reservaJson = reservasArray.getJSONObject(i);
+            Reserva reserva = Reserva.fromJson(reservaJson);
+            this.reservas.agregarElemento(reserva);
+        }
+
+        // Cargar recepcionistas
+        JSONArray recepcionistasArray = jsonObject.getJSONArray("recepcionistas");
+        for (int i = 0; i < recepcionistasArray.length(); i++) {
+            JSONObject recepcionistaJson = recepcionistasArray.getJSONObject(i);
+            Recepcionista recepcionista = Recepcionista.fromJson(recepcionistaJson);
+            this.recepcionistas.agregarElemento(recepcionista);
+        }
+
+        System.out.println("Datos cargados exitosamente desde el archivo JSON.");
     }
 }

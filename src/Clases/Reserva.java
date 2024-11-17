@@ -56,7 +56,7 @@ public class Reserva implements Jsonable {
 
     @Override
     public String toString() {
-        return "Reserva:\n" +
+        return "\nReserva:\n" +
                 "idPasajero:" + dniPasajero + '\n' +
                 "FechaInicio:" + fechaInicio + '\n' +
                 "FechaFin:" + fechaFin + '\n' +

@@ -69,9 +69,9 @@ public class Habitacion implements Jsonable {
 
     @Override
     public String toString(){
-        return "Numero:" + numero +'\n'+
-                "TipoHabitacion:" + tipo +'\n' +
-                "EstadoHabitacion:" + estado;
+        return "\nNumero:" + numero +'\n'+
+                "TipoHabitacion: " + tipo +'\n' +
+                "EstadoHabitacion: " + estado;
     }
     @Override
     public boolean equals(Object o) {

@@ -12,9 +12,13 @@ import java.util.HashMap;
 public class Administrador extends Usuario implements Autenticable {
     private String permisosEspeciales;
 
-    public Administrador(String nombre, String apellido, int dni, String contrasena, String permisosEspeciales) {
-        super(nombre, apellido, dni,    TipoUsuario.ADMINISTRADOR, contrasena);
+    public Administrador(String nombreUsuario, String contrasena, String permisosEspeciales) {
+        super(TipoUsuario.ADMINISTRADOR, contrasena, nombreUsuario);
         this.permisosEspeciales = permisosEspeciales;
+    }
+
+    public String getPermisosEspeciales() {
+        return permisosEspeciales;
     }
 
     @Override
@@ -25,15 +29,14 @@ public class Administrador extends Usuario implements Autenticable {
     @Override
     public String toString() {
         return "Contraseña: '" + getContrasena() + '\'' +
-                ", Dni:'" + getDni() + '\'' +
-                ", Nombre:'" + getNombre() + '\'' +
+                ", NombreUsuario: '" + getNombreUsuario() + '\'' +
                 ", TipoUsuario:" + getTipoUsuario();
     }
 
     @Override
     public JSONObject toJson() {
         JSONObject jsonObject = super.toJson(); // Obtiene el JSON del método de la clase base
-        jsonObject.put("contrasena", getContrasena()); // Añade la contraseña
+        jsonObject.put("permisosEspeciales", getPermisosEspeciales()); // Añade la contraseña
         return jsonObject;
     }
 

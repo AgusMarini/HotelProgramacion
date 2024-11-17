@@ -21,7 +21,7 @@ import java.util.Scanner;
 // HACER TESTING A FONDO, IGUALMENTE QUEDAN COSAS POR AGREGAR
 // SE PODRIA SOBREESCRIBIR  METODOS EQUALS EN LAS CLASES, PERO TODAVIA NO VEOQ UE SEA NECESARIO
 // ES REALMENTE UTIL TENER LAS CLASES RECEPCIONISTA Y ADMINISTRADOR? NO CREO, PERO QUEDA ASI IMPLEMENTAMOS LA CLASE AUTENTICABLE QUE EN REALIDAD NO TIENE INUTILIDAD PERO TODAVIA NO SE NOS OCURRE UNA INTERFAZ UTIL JEJEEE
-
+// AGREGAR RECAUDACION TOTAL
 /** SI SE LES OCURREN OTRAS COSAS ANOTEN  POR DEBAJO !!!!!!!!!!!!*/
 public class Main {
     public static void main(String[] args) {
@@ -29,11 +29,12 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         // Crear administrador y recepcionista predeterminados
-        Administrador administrador = new Administrador("Juan", "Perez", 43456838, "123456", "Acceso-total");
-        Recepcionista recepcionista = new Recepcionista("Ana", "Gomez",12345678, "654321", 8);
+        Administrador administrador = new Administrador("tecla", "123456", "Acceso-total");
 
         // Crear instancia del hotel con datos predeterminados
-        Hotel hotel = new Hotel("Hotel Único", administrador, recepcionista);
+        Hotel hotel = new Hotel("Hotel Único", administrador);
+
+        hotel.cargarDesdeArchivo(); //cargamos el objeto con los datos dentro del JSON
 
         // Menú principal
         while (true) {
@@ -53,8 +54,16 @@ public class Main {
                     }
                     break;
                 case 2:
-                    if (autenticarRecep(scanner, recepcionista)) {
+                    System.out.print("Ingrese su usuario: ");
+                    String recepUsuario = scanner.nextLine();
+                    System.out.print("Ingrese su contraseña: ");
+                    String recepContrasena = scanner.nextLine();
+
+                    if (hotel.autenticarRecepcionista(recepUsuario, recepContrasena)) {
+                        System.out.println("Autenticación exitosa. Bienvenido, " + recepUsuario);
                         menuRecepcionista(hotel, scanner);
+                    } else {
+                        System.out.println("Usuario o contraseña incorrectos.");
                     }
                     break;
                 case 0:
@@ -68,35 +77,22 @@ public class Main {
     }
 
     // Método para autenticar admin
-    private static boolean autenticarAdmin(Scanner scanner, Administrador usuario) {
-        System.out.print("Ingrese su usuario (nombre + apellido juntos): ");
+        private static boolean autenticarAdmin(Scanner scanner, Administrador usuario) {
+        System.out.print("Ingrese su usuario: ");
         String inputUsuario = scanner.nextLine();
+
         System.out.print("Ingrese su contraseña: ");
         String inputContrasena = scanner.nextLine();
 
         if (usuario.autenticar(inputUsuario, inputContrasena)) {
-            System.out.println("Autenticación exitosa. Bienvenido/a " + usuario.getNombre());
+            System.out.println("Autenticación exitosa. Bienvenido/a " + usuario.getNombreUsuario());
             return true;
         } else {
             System.out.println("Usuario o contraseña incorrectos.");
             return false;
         }
     }
-    // Método para autenticar recepcionista
-    private static boolean autenticarRecep(Scanner scanner, Recepcionista usuario) {
-        System.out.print("Ingrese su usuario (nombre + apellido juntos): ");
-        String inputUsuario = scanner.nextLine();
-        System.out.print("Ingrese su contraseña: ");
-        String inputContrasena = scanner.nextLine();
 
-        if (usuario.autenticar(inputUsuario, inputContrasena)) {
-            System.out.println("Autenticación exitosa. Bienvenido/a " + usuario.getNombre());
-            return true;
-        } else {
-            System.out.println("Usuario o contraseña incorrectos.");
-            return false;
-        }
-    }
     // Menú del Administrador
     private static void menuAdministrador(Hotel hotel, Scanner scanner) {
         int opcion;
@@ -105,7 +101,11 @@ public class Main {
             System.out.println("1. Agregar habitación");
             System.out.println("2. Eliminar habitación");
             System.out.println("3. Listar habitaciones");
-            System.out.println("4. Eliminar cliente");
+            System.out.println("4. Listar clientes");
+            System.out.println("5. Eliminar cliente");
+            System.out.println("6. Agregar recepcionista");
+            System.out.println("7. Eliminar recepcionista");
+            System.out.println("8. Listar recepcionistas");
             System.out.println("0. Volver al menú principal");
             System.out.print("Seleccione una opción: ");
 
@@ -125,12 +125,26 @@ public class Main {
                     case 2:
                         System.out.print("Ingrese número de habitación a eliminar: ");
                         int numeroEliminar = scanner.nextInt();
+
                         hotel.eliminarHabitacion(numeroEliminar);
                         break;
                     case 3:
-                        System.out.println(hotel.listaHabitacionesToString());
+                        try {
+                            System.out.println(hotel.listaHabitacionesToString());
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
                         break;
                     case 4:
+                        try {
+                            System.out.println(hotel.listaPasajerostoString());
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
+                        break;
+                    case 5:
                         try{
                             System.out.print("Ingrese DNI del pasajero a eliminar: ");
                             int dniEliminar = scanner.nextInt();
@@ -139,6 +153,45 @@ public class Main {
                         catch (PasajeroNoExisteExcepcion e){
                             System.out.println(e.getMessage());
                         }
+                        break;
+                    case 6:
+                        try {
+                            System.out.print("Ingrese nombre usurio del recepcionista: ");
+                            String nombreUsuario = scanner.nextLine();
+                            System.out.print("Ingrese contraseña del recepcionista: ");
+                            String contrasena = scanner.nextLine();
+                            System.out.print("Ingrese horario de trabajo del recepcionista (turno): ");
+                            int horarioTrabajo = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
+                            Recepcionista nuevoRecepcionista = new Recepcionista(contrasena,nombreUsuario, horarioTrabajo);
+                            hotel.agregarRecepcionista(nuevoRecepcionista);
+                        } catch (RecepcionistaYaExisteExcepcion e) {
+                            System.out.println(e.getMessage());
+                        }
+                        break;
+                    case 7:
+                        try {
+                            System.out.print("Ingrese el nombre de usuario del recepcionista a eliminar (nombre + apellido): ");
+                            String nombreCompleto = scanner.nextLine();
+                            hotel.eliminarRecepcionista(nombreCompleto);
+                        }
+                        catch (RecepcionistaNoExiste e){
+                            System.out.println(e.getMessage());
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
+
+                        break;
+                    case 8:
+                        try {
+                            System.out.println(hotel.listaRecepcionistasToString());
+                        }
+                        catch (ListaVaciaExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
+
+                        break;
                     case 0:
                         System.out.println("Volviendo al menú principal...");
                         break;
@@ -174,8 +227,10 @@ public class Main {
                         try{
                             System.out.print("Ingrese número de habitación: ");
                             int numeroCheckIn = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
                             System.out.print("Ingrese DNI del pasajero: ");
                             int dniCheckIn = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
                             hotel.realizarCheckIn(numeroCheckIn, dniCheckIn);
                         }
                         catch (HabitacionNoExisteExcepcion e){
@@ -189,8 +244,10 @@ public class Main {
                         try{
                             System.out.print("Ingrese número de habitación: ");
                             int numeroCheckOut = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
                             System.out.print("Ingrese DNI del pasajero: ");
                             int dniCheckOut = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
                             hotel.realizarCheckOut(numeroCheckOut, dniCheckOut);
                         }
                         catch (HabitacionNoExisteExcepcion e){
@@ -226,8 +283,10 @@ public class Main {
                     case 4:
                         System.out.print("Ingrese DNI del pasajero: ");
                         int dniReserva = scanner.nextInt();
+                        scanner.nextLine(); // Limpiar buffer
                         System.out.print("Ingrese número de habitación: ");
                         int numeroReserva = scanner.nextInt();
+                        scanner.nextLine(); // Limpiar buffer
                         System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
                         LocalDate inicio = LocalDate.parse(scanner.next());
                         System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
@@ -237,8 +296,10 @@ public class Main {
                     case 5:
                         System.out.print("Ingrese DNI del pasajero: ");
                         int dniCancel = scanner.nextInt();
+                        scanner.nextLine(); // Limpiar buffer
                         System.out.print("Ingrese número de habitación: ");
                         int numeroCancel = scanner.nextInt();
+                        scanner.nextLine(); // Limpiar buffer
                         System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
                         LocalDate inicioCancel = LocalDate.parse(scanner.next());
                         System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
@@ -248,6 +309,7 @@ public class Main {
                     case 6:
                         System.out.print("Ingrese DNI del pasajero: ");
                         int dniHistorial = scanner.nextInt();
+                        scanner.nextLine(); // Limpiar buffer
                         System.out.println(hotel.historialReservasToStringMedianteDni(dniHistorial));
                         break;
                     case 0:
