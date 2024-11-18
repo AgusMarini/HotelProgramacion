@@ -24,6 +24,7 @@ import java.util.Scanner;
 /**IMPORTANTE VER SI FUNCIONA EL TEMA DE LAS FECHAS Y DISPONIBILIDAD, TMB QUEDA POR REVISAR QUE HACER CON EL ESTADO LIMPIEZA
  * CON ESTO ULTIMO PROBEMOS IMPLEMENTAR LO QUE HIZO AGUS DEL TEMPORARIZADOR ESE */
 /** SI SE LES OCURREN OTRAS COSAS ANOTEN  POR DEBAJO !!!!!!!!!!!!*/
+/* Limpiar la consola pos seleccinoes */
 public class Main {
     public static void main(String[] args) {
 
