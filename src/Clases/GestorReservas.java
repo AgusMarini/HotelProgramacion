@@ -52,10 +52,13 @@ public class GestorReservas extends GestorColeccion<Reserva>{
 
     // Eliminar una reserva específica por habitación y fechas
     public boolean eliminarReserva(int numeroHabitacion, LocalDate inicio, LocalDate fin) {
-        return obtenerTodos().removeIf(reserva ->
-                reserva.getNumeroHabitacion() == numeroHabitacion &&
-                        reserva.getFechaInicio().equals(inicio) &&
-                        reserva.getFechaFin().equals(fin));
+        for(Reserva r : obtenerTodos()){
+            if (r.getNumeroHabitacion() == numeroHabitacion && r.getFechaInicio().equals(inicio) && r.getFechaFin().equals(fin)){
+                eliminarElemento(r);
+                return true;
+            }
+        }
+        return false;
     }
 
 

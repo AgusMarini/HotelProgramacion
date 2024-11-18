@@ -58,12 +58,24 @@ public class Pasajero extends Persona{
                 "  Domicilio: " + domicilio;
     }
 
+    public JSONArray historialToJson(){
+        JSONArray jsonArray = new JSONArray();
+        for (Reserva reserva : historialReservas) {
+            JSONObject jsonReserva = reserva.toJson();
+            jsonArray.put(jsonReserva);
+        }
+        return jsonArray;
+    }
+
     // Sobrescribe el método toJson para incluir los atributos de Clases.Usuario y Clases.Pasajero
     @Override
     public JSONObject toJson() {
         JSONObject jsonObject = super.toJson(); // Obtiene los atributos de Clases.Usuario
+        JSONArray historialArray = historialToJson();
+
         jsonObject.put("origen", origen);
         jsonObject.put("domicilio", domicilio);
+        jsonObject.put("historialReservas", historialArray);
         return jsonObject;
     }
     @Override

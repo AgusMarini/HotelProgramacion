@@ -37,8 +37,12 @@ public class Hotel {
         this.administrador = administrador;
         this.recepcionistas = new GestorColeccion<>();
         this.recaudacionTotal = 0.0;
-
 /*
+        inicializarHabitacionesPredeterminadas();
+        cargarArchivo();
+
+
+
         // Hilo para verificar las habitaciones cada 60 segundos
         Thread verificadorHabitaciones = new Thread(() -> {
             while (true) {
@@ -201,68 +205,65 @@ public class Hotel {
     /**        CHECK IN          */
 //CADA VEZ QUE ESTE SE REALIZA SE SUMA EL PRECIO DE LA RESERVA A LA RECAUDACION TOTAL
 
-    public boolean realizarCheckIn(int numeroHabitacion, int dniPasajero) throws HabitacionNoExisteExcepcion, ReservaNoValidaExcepcion {
+    public boolean realizarCheckIn(int numeroHabitacion, int dniPasajero, LocalDate hoy) throws HabitacionNoExisteExcepcion, ReservaNoValidaExcepcion {
         Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
-        boolean checkInrealizado = false;
         if (habitacion == null) {
             throw new HabitacionNoExisteExcepcion();
+        }
+        Reserva reserva = reservas.buscarReserva(numeroHabitacion, dniPasajero, hoy);
+        if (reserva == null) {
+            throw new ReservaNoValidaExcepcion();
         } else {
-            LocalDate hoy = LocalDate.now();
-            Reserva reserva = reservas.buscarReserva(numeroHabitacion, dniPasajero, hoy);
-            if (reserva == null) {
-                throw new ReservaNoValidaExcepcion();
+            if (habitacion.getEstado() == EstadoHabitacion.DISPONIBLE) {
+                double precioTotal = reserva.getPrecioTotal();
+                System.out.println("El precio total de la reserva es: $" + precioTotal);
+                System.out.println("Procesando pago...");
+                // Aquí podrías agregar lógica de validación de pago si es necesario
+
+                sumarRecaudacion(reserva.getPrecioTotal());
+
+
+                System.out.println("Se sumaron $" + reserva.getPrecioTotal() + " a la recaudación total.");
+
+                habitacion.setEstado(EstadoHabitacion.OCUPADA);
+                habitacion.setDniOcupante(dniPasajero);
+                System.out.println("Check-in realizado para el pasajero con DNI: " + dniPasajero);
+                return  true;
             } else {
-                if (habitacion.getEstado() == EstadoHabitacion.RESERVADA) {
-                    double precioTotal = reserva.getPrecioTotal();
-                    System.out.println("El precio total de la reserva es: $" + precioTotal);
-                    System.out.println("Procesando pago...");
-                    // Aquí podrías agregar lógica de validación de pago si es necesario
-
-
-                    habitacion.setEstado(EstadoHabitacion.OCUPADA);
-                    habitacion.setDniOcupante(dniPasajero);
-                    System.out.println("Check-in realizado para el pasajero con DNI: " + dniPasajero);
-                    checkInrealizado = true;
-                } else {
-                    System.out.println("La habitación NO ESTÁ en estado RESERVADA.");
-                }
+                System.out.println("La habitación NO ESTÁ en DISPONIBLE.");
+                return false;
             }
         }
-        return checkInrealizado;
     }
 
 
 
     /**CHECK OUT*/
 
-    public boolean realizarCheckOut(int numeroHabitacion, int dniPasajero) throws HabitacionNoExisteExcepcion {
+    public boolean realizarCheckOut(int numeroHabitacion, int dniPasajero, LocalDate hoy) throws HabitacionNoExisteExcepcion {
         Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
-        boolean checkOutrealizado = false;
 
         if (habitacion == null) {
             throw new HabitacionNoExisteExcepcion();
-        } else {
-            if (habitacion.getEstado() == EstadoHabitacion.OCUPADA && habitacion.getDniOcupante() == dniPasajero) {
-                habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
-                habitacion.setDniOcupante(0); // Liberar el DNI del ocupante
-                // Buscar la reserva correspondiente
-                LocalDate hoy = LocalDate.now();
-                Reserva reserva = reservas.buscarReserva(numeroHabitacion, dniPasajero, hoy);
-                if (reserva != null) {
-                    sumarRecaudacion(reserva.getPrecioTotal());
-                    // Eliminar la reserva de la lista global
-                    System.out.println("Se sumaron $" + reserva.getPrecioTotal() + " a la recaudación total.");
-                    reservas.eliminarElemento(reserva);
-
-                }
-
-                System.out.println("Check-out realizado para el pasajero con DNI: " + dniPasajero);
-                checkOutrealizado = true;
-            } else {
-                System.out.println("Error: La habitación no está ocupada por el pasajero con DNI proporcionado.");
-            }
         }
-        return checkOutrealizado;
+
+        if (habitacion.getEstado() == EstadoHabitacion.OCUPADA && habitacion.getDniOcupante() == dniPasajero) {
+            habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
+            habitacion.setDniOcupante(0); // Liberar el DNI del ocupante
+            // Buscar la reserva correspondiente
+            Reserva reserva = reservas.buscarReserva(numeroHabitacion, dniPasajero, hoy);
+            if (reserva == null) {
+                System.out.println("No se hizo reserva");
+                return false;
+            }
+            // Eliminar la reserva de la lista global
+            reservas.eliminarElemento(reserva);
+            System.out.println("Check-out realizado para el pasajero con DNI: " + dniPasajero);
+            return true;
+        } else {
+            System.out.println("Error: La habitación no está ocupada por el pasajero con DNI proporcionado.");
+            return false;
+        }
 
     }
 
@@ -313,14 +314,6 @@ public class Hotel {
         }
     }
 
-    public StringBuilder pasajerosToString(){
-        StringBuilder sb = new StringBuilder();
-        for(Pasajero p : pasajeros.obtenerTodos()){
-            sb.append(p.toString());
-        }
-        return sb;
-    }
-
     public Pasajero buscarPasajeroPorDni(int dni) {
         for (Pasajero p : pasajeros.obtenerTodos()) {
             if (p.getDni() == dni) {
@@ -362,23 +355,19 @@ public class Hotel {
             System.out.println("La habitación no está disponible en las fechas solicitadas.");
             return false;
         }
-
-
-
-        // Crear y agregar la reserva
-
-        Reserva nuevaReserva = new Reserva(dniPasajero, numeroHabitacion, inicio, fin);
-        nuevaReserva.setPrecioTotal(nuevaReserva.calcularPrecioTotal(habitacion.getTipo()));
-        reservas.agregarElemento(nuevaReserva);
-
-
         // Buscar al pasajero correspondiente y agregar la reserva a su historial
         Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
         if (pasajero != null) {
+            // Crear y agregar la reserva
+
+            Reserva nuevaReserva = new Reserva(dniPasajero, numeroHabitacion, inicio, fin);
+            nuevaReserva.setPrecioTotal(nuevaReserva.calcularPrecioTotal(habitacion.getTipo()));
+            reservas.agregarElemento(nuevaReserva);
             pasajero.agregarReservaAlHistorial(nuevaReserva);
             System.out.println("Reserva agregada al historial del pasajero con DNI: " + dniPasajero);
         } else {
             System.out.println("Error: Pasajero no encontrado. La reserva solo estará registrada globalmente.");
+            return false;
         }
 
         System.out.println("Reserva creada para el pasajero con DNI: " + dniPasajero + " en la habitación " + numeroHabitacion);
@@ -388,21 +377,25 @@ public class Hotel {
 
     // Método para cancelar una reserva desde la clase Hotel
     public boolean cancelarReserva(int dniPasajero, int numeroHabitacion, LocalDate inicio, LocalDate fin) {
+
+        // Buscar al pasajero correspondiente y eliminar la reserva a su historial
+        Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
+        if (pasajero == null) {
+            System.out.println("Error: Pasajero no encontrado.No se pudo eliminar la reserva del historial del pasajero");
+            return false;
+        }
+        if (habitacionExiste(numeroHabitacion)){
+            System.out.println("La habitacion no existe");
+            return false;
+        }
         boolean cancelada = reservas.eliminarReserva(numeroHabitacion, inicio, fin);
         if (cancelada) {
+            pasajero.eliminarReservaDelHistorial(buscarReservaPorDni(dniPasajero));
             System.out.println("Reserva cancelada exitosamente para la habitación " + numeroHabitacion);
+            System.out.println("Reserva eliminada al historial del pasajero con DNI: " + dniPasajero);
         } else {
             System.out.println("No se encontró ninguna reserva que coincida con los criterios especificados.");
         }
-        // Buscar al pasajero correspondiente y agregar la reserva a su historial
-        Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
-        if (pasajero != null) {
-            pasajero.eliminarReservaDelHistorial(buscarReservaPorDni(dniPasajero));
-            System.out.println("Reserva eliminada al historial del pasajero con DNI: " + dniPasajero);
-        } else {
-            System.out.println("Error: Pasajero no encontrado.No se pudo eliminar la reserva del historial del pasajero");
-        }
-
         return cancelada;
     }
 
@@ -417,7 +410,16 @@ public class Hotel {
         return null;
     }
 
-
+    public Reserva buscarReservaPorDni(int dniPasajero, int numeroHabitacion, LocalDate inicio) {
+        for (Reserva reserva : reservas.obtenerTodos()) {
+            if (reserva.getDniPasajero() == dniPasajero &&
+                    reserva.getNumeroHabitacion() == numeroHabitacion &&
+                    reserva.getFechaInicio().isEqual(inicio)) {
+                return reserva;
+            }
+        }
+        return null;
+    }
 
 
 
@@ -506,9 +508,9 @@ public class Hotel {
             throw new ListaVaciaExcepcion();
         } else {
             for (Habitacion h : habitaciones.obtenerTodos()) {
-                if (h.getEstado() == EstadoHabitacion.DISPONIBLE && reservas.estaHabitacionDisponible(h.getNumero(), inicio, fin)) {
+                if (reservas.estaHabitacionDisponible(h.getNumero(), inicio, fin)) {
                     count++;
-                    sb.append(h.toString());
+                    sb.append(h.toStringSinEstadoActual());
                 }
             }
         }
