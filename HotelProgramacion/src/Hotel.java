@@ -17,7 +17,7 @@ public class Hotel {
     private static List<Pasajero> pasajeros;
     private static List<Reserva> reservas;
     private static List<Reserva> reservasHabitaciones;
-    private List<ServicioAdicional> serviciosAdicionales;
+    private List<Clases.Recepcionista.ServicioAdicional> serviciosAdicionales;
     */
 
     public Hotel(String nombre) {
