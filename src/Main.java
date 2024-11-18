@@ -107,6 +107,7 @@ public class Main {
             System.out.println("6. Agregar recepcionista");
             System.out.println("7. Eliminar recepcionista");
             System.out.println("8. Listar recepcionistas");
+            System.out.println("9. Ver recaudacion total hasta la fecha");
             System.out.println("0. Volver al menú principal");
             System.out.print("Seleccione una opción: ");
 
@@ -116,18 +117,27 @@ public class Main {
             try {
                 switch (opcion) {
                     case 1:
-                        System.out.print("Ingrese número de habitación: ");
-                        int numero = scanner.nextInt();
-                        scanner.nextLine(); // Limpiar buffer
-                        System.out.print("Ingrese tipo de habitación (SIMPLE, DOBLE, SUITE): ");
-                        String tipo = scanner.nextLine().toUpperCase();
-                        hotel.agregarHabitacion(numero, TipoHabitacion.valueOf(tipo));
+                        try{
+                            System.out.print("Ingrese número de habitación: ");
+                            int numero = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
+                            System.out.print("Ingrese tipo de habitación (SIMPLE, DOBLE, SUITE): ");
+                            String tipo = scanner.nextLine().toUpperCase();
+                            hotel.agregarHabitacion(numero, TipoHabitacion.valueOf(tipo));
+                        }
+                        catch (HbitacionYaExisteExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
                         break;
                     case 2:
-                        System.out.print("Ingrese número de habitación a eliminar: ");
-                        int numeroEliminar = scanner.nextInt();
-
-                        hotel.eliminarHabitacion(numeroEliminar);
+                        try{
+                            System.out.print("Ingrese número de habitación a eliminar: ");
+                            int numeroEliminar = scanner.nextInt();
+                            hotel.eliminarHabitacion(numeroEliminar);
+                        }
+                        catch (HabitacionNoExisteExcepcion e){
+                            System.out.println(e.getMessage());
+                        }
                         break;
                     case 3:
                         try {
@@ -193,6 +203,9 @@ public class Main {
                         }
 
                         break;
+                    case 9:
+                        System.out.println("\nLa recaudacion total actual es de $" + hotel.getRecaudacionTotal());
+                        break;
                     case 0:
                         System.out.println("Volviendo al menú principal...");
                         break;
@@ -218,7 +231,7 @@ public class Main {
             System.out.println("6. Ver todas las habitaciones");
             System.out.println("7. Agregar reserva");
             System.out.println("8. Cancelar reserva");
-            System.out.println("9. Ver todas las reservas");
+            System.out.println("9. Ver todas las reservas(se eliminan las viejas dps de realizar el checkout)");
             System.out.println("10. Ver historial de reservas de un pasajero");
             System.out.println("0. Volver al menú principal");
             System.out.print("Seleccione una opción: ");
@@ -236,30 +249,38 @@ public class Main {
                             System.out.print("Ingrese DNI del pasajero: ");
                             int dniCheckIn = scanner.nextInt();
                             scanner.nextLine(); // Limpiar buffer
+                            System.out.print("Ingrese fecha de check-in (YYYY-MM-DD): ");
+                            LocalDate hoy = LocalDate.parse(scanner.next());
                             hotel.realizarCheckIn(numeroCheckIn, dniCheckIn);
-                        }
-                        catch (HabitacionNoExisteExcepcion e){
+
+                            // Reserva servicio adicional al hacer el check-in
+                            System.out.print("¿Desea reservar un servicio adicional? (Spa, Restaurante): ");
+                            String servicio = scanner.next();
+                            System.out.print("Ingrese el horario: ");
+                            String horario = scanner.next();
+                            hotel.agregarServicioAdicional(servicio, horario);
+                        } catch (HabitacionNoExisteExcepcion e) {
                             System.out.println(e.getMessage());
-                        }
-                        catch (ReservaNoValidaExcepcion excepcion){
+                        } catch (ReservaNoValidaExcepcion excepcion) {
                             System.out.println(excepcion.getMessage());
                         }
                         break;
                     case 2:
-                        try{
+                        try {
                             System.out.print("Ingrese número de habitación: ");
                             int numeroCheckOut = scanner.nextInt();
                             scanner.nextLine(); // Limpiar buffer
                             System.out.print("Ingrese DNI del pasajero: ");
                             int dniCheckOut = scanner.nextInt();
                             scanner.nextLine(); // Limpiar buffer
+                            System.out.print("Ingrese fecha de salida (YYYY-MM-DD): ");
+                            LocalDate salida = LocalDate.parse(scanner.next());
                             hotel.realizarCheckOut(numeroCheckOut, dniCheckOut);
-                        }
-                        catch (HabitacionNoExisteExcepcion e){
+                        } catch (HabitacionNoExisteExcepcion e) {
                             System.out.println(e.getMessage());
                         }
-
                         break;
+
                     case 3:
                         try{
                             System.out.print("Ingrese nombre del pasajero: ");
@@ -320,12 +341,43 @@ public class Main {
                         System.out.print("Ingrese número de habitación: ");
                         int numeroReserva = scanner.nextInt();
                         scanner.nextLine(); // Limpiar buffer
+
+                        // Solicitar al usuario que seleccione el tipo de habitación
+                        System.out.println("Seleccione el tipo de habitación:");
+                        System.out.println("1. SIMPLE");
+                        System.out.println("2. DOBLE");
+                        System.out.println("3. SUITE");
+                        System.out.print("Ingrese el número de la opción: ");
+                        int tipoHabitacionOpcion = scanner.nextInt();
+                        scanner.nextLine(); // Limpiar buffer
+
+                        // Asignar el tipo de habitación según la opción seleccionada
+                        TipoHabitacion tipoHabitacion = null;
+                        switch (tipoHabitacionOpcion) {
+                            case 1:
+                                tipoHabitacion = TipoHabitacion.SIMPLE;
+                                break;
+                            case 2:
+                                tipoHabitacion = TipoHabitacion.DOBLE;
+                                break;
+                            case 3:
+                                tipoHabitacion = TipoHabitacion.SUITE;
+                                break;
+                            default:
+                                System.out.println("Opción inválida, se asignará habitación SIMPLE por defecto.");
+                                tipoHabitacion = TipoHabitacion.SIMPLE;
+                                break;
+                        }
+
                         System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
                         LocalDate inicio = LocalDate.parse(scanner.next());
                         System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
                         LocalDate fin = LocalDate.parse(scanner.next());
-                        hotel.agregarReserva(dniReserva, numeroReserva, inicio, fin);
+
+                        // Ahora se agrega la reserva con el tipo de habitación seleccionado
+                        hotel.agregarReserva(dniReserva, numeroReserva, tipoHabitacion, inicio, fin);
                         break;
+
                     case 8:
                         System.out.print("Ingrese DNI del pasajero: ");
                         int dniCancel = scanner.nextInt();

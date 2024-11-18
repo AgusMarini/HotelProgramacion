@@ -8,7 +8,6 @@ import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 public class Hotel {
@@ -32,19 +31,24 @@ public class Hotel {
         this.administrador = administrador;
         this.recepcionistas = new GestorColeccion<>();
         this.recaudacionTotal = 0.0;
+        this.serviciosAdicionales = new GestorColeccion<>();
+
+        this.serviciosAdicionales.agregarElemento(new ServicioAdicional("Spa", List.of("10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM"), 50.0));
+        this.serviciosAdicionales.agregarElemento(new ServicioAdicional("Restaurante", List.of("01:00 PM", "07:00 PM"), 30.0));
 
 
         // Hilo para verificar las habitaciones cada 60 segundos
         Thread verificadorHabitaciones = new Thread(() -> {
             while (true) {
                 try {
-                    verificarHabitacionesParaCambiarADisponible();
-                    Thread.sleep(60000);
+                    verificarHabitacionesParaCambiarADisponible();  // Llama al método que verifica el estado de las habitaciones
+                    Thread.sleep(60000);  // Pausa el hilo por 60 segundos antes de volver a ejecutar
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         });
+
 
         verificadorHabitaciones.setDaemon(true);
         verificadorHabitaciones.start();
@@ -52,13 +56,24 @@ public class Hotel {
 
     }
     public void verificarHabitacionesParaCambiarADisponible() {
+        // Itera sobre las habitaciones usando el método obtenerTodos()
         for (Habitacion habitacion : habitaciones.obtenerTodos()) {
+            // Verifica si la habitación puede cambiar a disponible
             if (habitacion.puedeCambiarADisponible()) {
+                // Cambia el estado a DISPONIBLE
                 habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
-                System.out.println("La habitación " + habitacion.getNumero() + " ha cambiado a disponible.");
             }
         }
     }
+    public List<String> mostrarHorariosDisponibles(String nombreServicio) {
+        for (ServicioAdicional servicio : this.serviciosAdicionales.obtenerTodos()) {
+            if (servicio.getNombre().equalsIgnoreCase(nombreServicio)) {
+                return servicio.getHorariosDisponibles();  // Devolvemos los horarios disponibles para ese servicio.
+            }
+        }
+        return new ArrayList<>();  // Si no se encuentra el servicio, devolvemos una lista vacía.
+    }
+
 
     public double getRecaudacionTotal() {
         return recaudacionTotal;
@@ -143,6 +158,27 @@ public class Hotel {
         }
         return autenticado;
     }
+    public void agregarServicioAdicional(String servicio, String horario) {
+        // Buscar el servicio por su nombre
+        ServicioAdicional servicioSeleccionado = buscarServicio(servicio);
+
+        if (servicioSeleccionado != null) {
+            // Si el servicio es encontrado, intentar reservarlo
+            if (servicioSeleccionado.reservarTurno(horario)) {
+                System.out.println("Servicio adicional reservado con éxito.");
+            }
+        } else {
+            System.out.println("El servicio no está disponible.");
+        }
+    }
+    public ServicioAdicional buscarServicio(String nombre) {
+        for (ServicioAdicional servicio : serviciosAdicionales.obtenerTodos()) {
+            if (servicio.getNombre().equalsIgnoreCase(nombre)) {
+                return servicio;
+            }
+        }
+        return null; // Si no se encuentra el servicio
+    }
 
 
 
@@ -150,13 +186,13 @@ public class Hotel {
 
     public boolean agregarHabitacion(int numero, TipoHabitacion tipoHabitacion) throws HbitacionYaExisteExcepcion {
         boolean habitacionAgregada = false;
-        if(habitacionExiste(numero) == true){
-            throw new HbitacionYaExisteExcepcion();
-        } else {
-            habitaciones.agregarElemento(new Habitacion(numero, tipoHabitacion));
-            System.out.println("Habitación " + numero + " agregada al inventario.");
-            habitacionAgregada = true;
-        }
+       if(habitacionExiste(numero) == true){
+           throw new HbitacionYaExisteExcepcion();
+       } else {
+           habitaciones.agregarElemento(new Habitacion(numero, tipoHabitacion));
+           System.out.println("Habitación " + numero + " agregada al inventario.");
+           habitacionAgregada = true;
+       }
         return habitacionAgregada;
     }
 
@@ -240,14 +276,16 @@ public class Hotel {
 
     public boolean realizarCheckOut(int numeroHabitacion, int dniPasajero) throws HabitacionNoExisteExcepcion {
         Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
-        boolean checkOutrealizado = false;
+        boolean checkOutRealizado = false;
 
         if (habitacion == null) {
             throw new HabitacionNoExisteExcepcion();
         } else {
             if (habitacion.getEstado() == EstadoHabitacion.OCUPADA && habitacion.getDniOcupante() == dniPasajero) {
+                // Cambiar el estado a LIMPIEZA después del check-out
                 habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
                 habitacion.setDniOcupante(0); // Liberar el DNI del ocupante
+
                 // Buscar la reserva correspondiente
                 LocalDate hoy = LocalDate.now();
                 Reserva reserva = reservas.buscarReserva(numeroHabitacion, dniPasajero, hoy);
@@ -256,18 +294,17 @@ public class Hotel {
                     // Eliminar la reserva de la lista global
                     System.out.println("Se sumaron $" + reserva.getPrecioTotal() + " a la recaudación total.");
                     reservas.eliminarElemento(reserva);
-
                 }
 
                 System.out.println("Check-out realizado para el pasajero con DNI: " + dniPasajero);
-                checkOutrealizado = true;
+                checkOutRealizado = true;
             } else {
                 System.out.println("Error: La habitación no está ocupada por el pasajero con DNI proporcionado.");
             }
         }
-        return checkOutrealizado;
-
+        return checkOutRealizado;
     }
+
 
     /** INICIAR HABITACIONES AUTOMATICAMENTE  */
 
@@ -278,6 +315,7 @@ public class Hotel {
         habitaciones.agregarElemento(new Habitacion(104, TipoHabitacion.SIMPLE));
         habitaciones.agregarElemento(new Habitacion(105, TipoHabitacion.DOBLE));
     }
+
 
 
 
@@ -343,7 +381,7 @@ public class Hotel {
     /**           AGREGAR Y CANCELAR RESERVAS               */
 
 
-    public boolean agregarReserva(int dniPasajero, int numeroHabitacion, LocalDate inicio, LocalDate fin) {
+    public boolean agregarReserva(int dniPasajero, int numeroHabitacion, TipoHabitacion tipoHabitacion, LocalDate inicio, LocalDate fin) {
         // Verificar si la habitación existe
         Habitacion habitacion = buscarHabitacionPorNumero(numeroHabitacion);
         if (habitacion == null) {
@@ -399,7 +437,6 @@ public class Hotel {
         return cancelada;
     }
 
-
     /**   BUSCAR RESERVAS POR DNI       */
 
     public Reserva buscarReservaPorDni(int dni) {
@@ -416,27 +453,25 @@ public class Hotel {
 
 
 
-    // Método para inicializar los servicios adicionales
-    private void inicializarServiciosPredeterminados() {
-        List<String> horariosSpa = List.of("10:00 AM - 12:00 PM", "02:00 PM - 04:00 PM");
-        List<String> horariosRestaurante = List.of("08:00 PM - 10:00 PM");
 
-        List<ServicioAdicional> serviciosAdicionales = new ArrayList<>();
-        serviciosAdicionales.add(new ServicioAdicional("Spa", horariosSpa, 50.0));
-        serviciosAdicionales.add(new ServicioAdicional("Restaurante", horariosRestaurante, 30.0));
+/*
+    private void inicializarServiciosPredeterminados() {
+        List<String> horariosSpa = List.of("10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM");
+        List<String> horariosRestaurante = List.of("08:00 PM", "09:00 PM", "10:00 PM");
+
+        serviciosAdicionales.add(new ServicioAdicional("Spa", horariosSpa));
+        serviciosAdicionales.add(new ServicioAdicional("Restaurante", horariosRestaurante));
     }
 
-    // Método para buscar el servicio adicional
     public ServicioAdicional buscarServicio(String nombre) {
         for (ServicioAdicional servicio : serviciosAdicionales) {
             if (servicio.getNombre().equalsIgnoreCase(nombre)) {
                 return servicio;
             }
         }
-        return null;  // Si no se encuentra el servicio
+        return null;
     }
-
-
+*/
 
 
     /**               MOSTRAR      LISTAS             */

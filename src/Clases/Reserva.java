@@ -90,7 +90,7 @@ public class Reserva implements Jsonable {
     @Override
     public String toString() {
         return "\nReserva:\n" +
-                "idPasajero:" + dniPasajero + '\n' +
+                "dniPasajero:" + dniPasajero + '\n' +
                 "FechaInicio:" + fechaInicio + '\n' +
                 "FechaFin:" + fechaFin + '\n' +
                 "NumeroHabitacion:" + numeroHabitacion + '\n' +
@@ -98,7 +98,7 @@ public class Reserva implements Jsonable {
     }
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
-        json.put("idPasajero", dniPasajero);
+        json.put("dniPasajero", dniPasajero);
         json.put("fechaInicio", fechaInicio.toString());
         json.put("fechaFin", fechaFin.toString());
         json.put("numeroHabitacion", numeroHabitacion);

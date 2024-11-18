@@ -6,27 +6,22 @@ import Interfaces.Autenticable;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Recepcionista extends Usuario implements Autenticable {
 
     private int horarioTrabajo;
-    private List<ServicioAdicional> serviciosAdicionales;
 
     public Recepcionista(String contrasena, String nombreUsuario, int horarioTrabajo) {
         super(TipoUsuario.RECEPECIONISTA, contrasena, nombreUsuario);
         this.horarioTrabajo = horarioTrabajo;
-        this.serviciosAdicionales = ServicioAdicional.inicializarServiciosPredeterminados();
     }
-
+    public Recepcionista(String contrasena, String nombreUsuario) {
+        super(TipoUsuario.RECEPECIONISTA, contrasena, nombreUsuario);
+    }
 
     public int getHorarioTrabajo() {
         return horarioTrabajo;
-    }
-
-    public void setHorarioTrabajo(int horarioTrabajo) {
-        this.horarioTrabajo = horarioTrabajo;
     }
 
     @Override
@@ -58,32 +53,6 @@ public class Recepcionista extends Usuario implements Autenticable {
 
         return new Recepcionista(contrasena,nombreUsuario, horarioTrabajo);
     }
-
-    public void agregarServicioAdicional(String nombreServicio, String horario) {
-        // Buscar el servicio por nombre
-        ServicioAdicional servicio = buscarServicio(nombreServicio);
-        if (servicio != null) {
-            // Intentar reservar el horario solicitado para el servicio
-            boolean exito = servicio.reservarTurno(horario);
-            if (exito) {
-                // Si se reservó correctamente, agregar el servicio a la lista de servicios adicionales del pasajero
-                System.out.println("Servicio adicional reservado con éxito.");
-            }
-        } else {
-            System.out.println("Servicio no disponible.");
-        }
-    }
-
-    // Método para buscar el servicio
-    public ServicioAdicional buscarServicio(String nombre) {
-        for (ServicioAdicional servicio : serviciosAdicionales) {
-            if (servicio.getNombre().equalsIgnoreCase(nombre)) {
-                return servicio;
-            }
-        }
-        return null;  // Si no se encuentra el servicio
-    }
-
 
     /*
     public void controlarDisponibilidad() {

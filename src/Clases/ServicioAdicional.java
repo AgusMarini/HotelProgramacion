@@ -1,6 +1,7 @@
 package Clases;
 
 import Interfaces.Jsonable;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,5 +78,15 @@ public class ServicioAdicional implements Jsonable {
         serviciosAdicionales.add(new ServicioAdicional("Restaurante", horariosRestaurante, 30.0));
 
         return serviciosAdicionales;
+    }
+
+    @Override
+    public JSONObject toJson() {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("nombre", nombre);
+            jsonObject.put("horariosDisponibles", horariosDisponibles);
+            jsonObject.put("costo", costo);
+            return jsonObject;
+
     }
 }
