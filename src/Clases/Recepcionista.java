@@ -39,9 +39,9 @@ public class Recepcionista extends Usuario implements Autenticable {
     }
     @Override
     public String toString() {
-        return "\nRecepcionista{" +
-                "  nombreUsuario = " + getNombreUsuario() +
-                ", horarioTrabajo=" + horarioTrabajo +
+        return "\nRecepcionista {" +
+                "  \nnombreUsuario = " + getNombreUsuario() +
+                ", \nhorarioTrabajo=" + horarioTrabajo +
                 '}';
     }
 

@@ -384,7 +384,7 @@ public class Hotel {
             System.out.println("Error: Pasajero no encontrado.No se pudo eliminar la reserva del historial del pasajero");
             return false;
         }
-        if (habitacionExiste(numeroHabitacion)){
+        if (!habitacionExiste(numeroHabitacion)){
             System.out.println("La habitacion no existe");
             return false;
         }
