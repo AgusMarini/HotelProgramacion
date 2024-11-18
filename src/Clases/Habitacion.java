@@ -53,6 +53,8 @@ public class Habitacion implements Jsonable {
         this.dniOcupante = dniOcupante;
     }
 
+
+    /**    SIN USARRR       */
     public void liberarHabitacion() {
         this.setEstado(EstadoHabitacion.DISPONIBLE);
         this.setDniOcupante(0);
@@ -65,6 +67,7 @@ public class Habitacion implements Jsonable {
             setEstado(estadoAcambiar);
         }
     }
+
 
 
     public String toStringSinEstadoActual(){

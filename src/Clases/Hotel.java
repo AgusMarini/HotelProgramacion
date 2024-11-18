@@ -172,6 +172,7 @@ public class Hotel {
     }
 
 
+    /**        SIN    USAR           */
 
     public Habitacion buscarHabitacionDisponiblePorTipo(TipoHabitacion tipoHabitacion) {
         for (Habitacion habitacion : habitaciones.obtenerTodos()) {
@@ -334,6 +335,9 @@ public class Hotel {
         Pasajero pasajero = buscarPasajeroPorDni(dniPasajero);
         StringBuilder sb = new StringBuilder();
         sb.append(pasajero.historiaReservasToString());
+        if(sb == null){
+            sb.append("No se encontraron reservas en el historial del pasajero");
+        }
         return sb;
     }
 

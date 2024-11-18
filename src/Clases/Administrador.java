@@ -40,6 +40,8 @@ public class Administrador extends Usuario implements Autenticable {
         return jsonObject;
     }
 
+    /**   SIN USAR     */
+
     public static Habitacion crearHabitacion(int numero, TipoHabitacion tipoHabitacion) {
         // Crear la nueva habitación
 

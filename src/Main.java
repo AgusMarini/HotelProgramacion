@@ -9,7 +9,9 @@ import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -39,41 +41,48 @@ public class Main {
 
         // Menú principal
         while (true) {
-            System.out.println("\n=== Sistema de Gestión Hotelera ===");
-            System.out.println("1. Ingresar como Administrador");
-            System.out.println("2. Ingresar como Recepcionista");
-            System.out.println("0. Salir");
-            System.out.print("Seleccione una opción: ");
+            try{
+                System.out.println("\n=== Sistema de Gestión Hotelera ===");
+                System.out.println("1. Ingresar como Administrador");
+                System.out.println("2. Ingresar como Recepcionista");
+                System.out.println("0. Salir");
+                System.out.print("Seleccione una opción: ");
 
-            int opcion = scanner.nextInt();
-            scanner.nextLine(); // Limpiar buffer
+                int opcion = scanner.nextInt();
+                scanner.nextLine(); // Limpiar buffer
 
-            switch (opcion) {
-                case 1:
-                    if (autenticarAdmin(scanner, administrador)) {
-                        menuAdministrador(hotel, scanner);
-                    }
-                    break;
-                case 2:
-                    System.out.print("Ingrese su usuario: ");
-                    String recepUsuario = scanner.nextLine();
-                    System.out.print("Ingrese su contraseña: ");
-                    String recepContrasena = scanner.nextLine();
+                switch (opcion) {
+                    case 1:
+                        if (autenticarAdmin(scanner, administrador)) {
+                            menuAdministrador(hotel, scanner);
+                        }
+                        break;
+                    case 2:
+                        System.out.print("Ingrese su usuario: ");
+                        String recepUsuario = scanner.nextLine();
+                        System.out.print("Ingrese su contraseña: ");
+                        String recepContrasena = scanner.nextLine();
 
-                    if (hotel.autenticarRecepcionista(recepUsuario, recepContrasena)) {
-                        System.out.println("Autenticación exitosa. Bienvenido, " + recepUsuario);
-                        menuRecepcionista(hotel, scanner);
-                    } else {
-                        System.out.println("Usuario o contraseña incorrectos.");
-                    }
-                    break;
-                case 0:
-                    System.out.println("Saliendo del sistema...");
-                    hotel.cargarArchivo(); // Guardar datos en archivo JSON
-                    return;
-                default:
-                    System.out.println("Opción inválida. Intente nuevamente.");
+                        if (hotel.autenticarRecepcionista(recepUsuario, recepContrasena)) {
+                            System.out.println("Autenticación exitosa. Bienvenido, " + recepUsuario);
+                            menuRecepcionista(hotel, scanner);
+                        } else {
+                            System.out.println("Usuario o contraseña incorrectos.");
+                        }
+                        break;
+                    case 0:
+                        System.out.println("Saliendo del sistema...");
+                        hotel.cargarArchivo(); // Guardar datos en archivo JSON
+                        return;
+                    default:
+                        System.out.println("Opción inválida. Intente nuevamente.");
+                }
             }
+            catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, ingrese un número.");
+                scanner.nextLine(); // Limpia el buffer de entrada
+            }
+
         }
     }
 
@@ -96,25 +105,26 @@ public class Main {
 
     // Menú del Administrador
     private static void menuAdministrador(Hotel hotel, Scanner scanner) {
-        int opcion;
+        int opcion = -1;
         do {
-            System.out.println("\n=== Menú Administrador ===");
-            System.out.println("1. Agregar habitación");
-            System.out.println("2. Eliminar habitación");
-            System.out.println("3. Listar habitaciones");
-            System.out.println("4. Listar clientes");
-            System.out.println("5. Eliminar cliente");
-            System.out.println("6. Agregar recepcionista");
-            System.out.println("7. Eliminar recepcionista");
-            System.out.println("8. Listar recepcionistas");
-            System.out.println("9. Ver recaudacion total hasta la fecha");
-            System.out.println("0. Volver al menú principal");
-            System.out.print("Seleccione una opción: ");
+            try{
+                System.out.println("\n=== Menú Administrador ===");
+                System.out.println("1. Agregar habitación");
+                System.out.println("2. Eliminar habitación");
+                System.out.println("3. Listar habitaciones");
+                System.out.println("4. Listar clientes");
+                System.out.println("5. Eliminar cliente");
+                System.out.println("6. Agregar recepcionista");
+                System.out.println("7. Eliminar recepcionista");
+                System.out.println("8. Listar recepcionistas");
+                System.out.println("9. Ver recaudacion total hasta la fecha");
+                System.out.println("0. Volver al menú principal");
+                System.out.print("Seleccione una opción: ");
 
-            opcion = scanner.nextInt();
-            scanner.nextLine(); // Limpiar buffer
+                opcion = scanner.nextInt();
+                scanner.nextLine(); // Limpiar buffer
 
-            try {
+
                 switch (opcion) {
                     case 1:
                         try{
@@ -212,7 +222,12 @@ public class Main {
                     default:
                         System.out.println("Opción inválida. Intente nuevamente.");
                 }
-            } catch (Exception e) {
+            }
+            catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, ingrese un número.");
+                scanner.nextLine(); // Limpia el buffer de entrada
+            }
+            catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
         } while (opcion != 0);
@@ -220,26 +235,26 @@ public class Main {
 
     // Menú del Recepcionista
     private static void menuRecepcionista(Hotel hotel, Scanner scanner) {
-        int opcion;
+        int opcion = -1;
         do {
-            System.out.println("\n=== Menú Recepcionista ===");
-            System.out.println("1. Realizar check-in");
-            System.out.println("2. Realizar check-out");
-            System.out.println("3. Agregar cliente(antes de realizar reserva)");
-            System.out.println("4. Ver habitaciones disponibles por fecha");
-            System.out.println("5. Ver habitaciones disponibles ahora");
-            System.out.println("6. Ver todas las habitaciones");
-            System.out.println("7. Agregar reserva");
-            System.out.println("8. Cancelar reserva");
-            System.out.println("9. Ver todas las reservas(se eliminan las viejas dps de realizar el checkout)");
-            System.out.println("10. Ver historial de reservas de un pasajero");
-            System.out.println("0. Volver al menú principal");
-            System.out.print("Seleccione una opción: ");
-
-            opcion = scanner.nextInt();
-            scanner.nextLine(); // Limpiar buffer
-
             try {
+                System.out.println("\n=== Menú Recepcionista ===");
+                System.out.println("1. Realizar check-in");
+                System.out.println("2. Realizar check-out");
+                System.out.println("3. Agregar cliente(antes de realizar reserva)");
+                System.out.println("4. Ver habitaciones disponibles por fecha");
+                System.out.println("5. Ver habitaciones disponibles ahora");
+                System.out.println("6. Ver todas las habitaciones");
+                System.out.println("7. Agregar reserva");
+                System.out.println("8. Cancelar reserva");
+                System.out.println("9. Ver todas las reservas(se eliminan las viejas dps de realizar el checkout)");
+                System.out.println("10. Ver historial de reservas de un pasajero");
+                System.out.println("0. Volver al menú principal");
+                System.out.print("Seleccione una opción: ");
+
+                opcion = scanner.nextInt();
+                scanner.nextLine(); // Limpiar buffer
+
                 switch (opcion) {
                     case 1:
                         try{
@@ -259,6 +274,9 @@ public class Main {
                         catch (ReservaNoValidaExcepcion excepcion){
                             System.out.println(excepcion.getMessage());
                         }
+                        catch (DateTimeParseException e) {
+                            System.out.println("Formato de fecha inválido. Por favor, intente nuevamente.");
+                        }
                         break;
                     case 2:
                         try{
@@ -274,6 +292,9 @@ public class Main {
                         }
                         catch (HabitacionNoExisteExcepcion e){
                             System.out.println(e.getMessage());
+                        }
+                        catch (DateTimeParseException e) {
+                            System.out.println("Formato de fecha inválido. Por favor, intente nuevamente.");
                         }
 
                         break;
@@ -313,6 +334,9 @@ public class Main {
                         catch (ListaVaciaExcepcion e){
                             System.out.println(e.getMessage());
                         }
+                        catch (DateTimeParseException e) {
+                            System.out.println("Formato de fecha inválido. Por favor, intente nuevamente.");
+                        }
                         break;
                     case 5:
                         try{
@@ -331,30 +355,42 @@ public class Main {
                         }
                         break;
                     case 7:
-                        System.out.print("Ingrese DNI del pasajero: ");
-                        int dniReserva = scanner.nextInt();
-                        scanner.nextLine(); // Limpiar buffer
-                        System.out.print("Ingrese número de habitación: ");
-                        int numeroReserva = scanner.nextInt();
-                        scanner.nextLine(); // Limpiar buffer
-                        System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
-                        LocalDate inicio = LocalDate.parse(scanner.next());
-                        System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
-                        LocalDate fin = LocalDate.parse(scanner.next());
-                        hotel.agregarReserva(dniReserva, numeroReserva, inicio, fin);
+                        try{
+                            System.out.print("Ingrese DNI del pasajero: ");
+                            int dniReserva = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
+                            System.out.print("Ingrese número de habitación: ");
+                            int numeroReserva = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
+                            System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
+                            LocalDate inicio = LocalDate.parse(scanner.next());
+                            System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
+                            LocalDate fin = LocalDate.parse(scanner.next());
+                            hotel.agregarReserva(dniReserva, numeroReserva, inicio, fin);
+                        }
+                        catch (DateTimeParseException e) {
+                            System.out.println("Formato de fecha inválido. Por favor, intente nuevamente.");
+                        }
+
                         break;
                     case 8:
-                        System.out.print("Ingrese DNI del pasajero: ");
-                        int dniCancel = scanner.nextInt();
-                        scanner.nextLine(); // Limpiar buffer
-                        System.out.print("Ingrese número de habitación: ");
-                        int numeroCancel = scanner.nextInt();
-                        scanner.nextLine(); // Limpiar buffer
-                        System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
-                        LocalDate inicioCancel = LocalDate.parse(scanner.next());
-                        System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
-                        LocalDate finCancel = LocalDate.parse(scanner.next());
-                        hotel.cancelarReserva(dniCancel, numeroCancel, inicioCancel, finCancel);
+                        try {
+                            System.out.print("Ingrese DNI del pasajero: ");
+                            int dniCancel = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
+                            System.out.print("Ingrese número de habitación: ");
+                            int numeroCancel = scanner.nextInt();
+                            scanner.nextLine(); // Limpiar buffer
+                            System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
+                            LocalDate inicioCancel = LocalDate.parse(scanner.next());
+                            System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
+                            LocalDate finCancel = LocalDate.parse(scanner.next());
+                            hotel.cancelarReserva(dniCancel, numeroCancel, inicioCancel, finCancel);
+                        }
+                        catch (DateTimeParseException e) {
+                            System.out.println("Formato de fecha inválido. Por favor, intente nuevamente.");
+                        }
+
                         break;
                     case 9:
                         try{
@@ -376,7 +412,12 @@ public class Main {
                     default:
                         System.out.println("Opción inválida. Intente nuevamente.");
                 }
-            } catch (Exception e) {
+            }
+            catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, ingrese un número.");
+                scanner.nextLine(); // Limpia el buffer de entrada
+            }
+            catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
         } while (opcion != 0);

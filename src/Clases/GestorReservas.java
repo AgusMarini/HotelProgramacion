@@ -16,6 +16,8 @@ public class GestorReservas extends GestorColeccion<Reserva>{
         return true; // La habitación está disponible si no hay solapamientos
     }
 
+    /**          SIN USAR            */
+
     // Buscar reservas por DNI del pasajero
     public List<Reserva> buscarPorDni(int dniPasajero) {
         return obtenerTodos().stream()
@@ -37,6 +39,8 @@ public class GestorReservas extends GestorColeccion<Reserva>{
                         !fecha.isAfter(reserva.getFechaFin()))
                 .collect(Collectors.toList());
     }
+
+
     // Método para buscar una reserva específica por habitación, pasajero y fecha
     public Reserva buscarReserva(int numeroHabitacion, int dniPasajero, LocalDate fecha) {
         for (Reserva reserva : obtenerTodos()) {
